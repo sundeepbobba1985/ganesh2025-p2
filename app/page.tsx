@@ -75,13 +75,17 @@ export default function Home() {
       const scope = "openid email profile"
 
       const googleAuthUrl =
-        `https://accounts.google.com/oauth/authorize?` +
+        `https://accounts.google.com/o/oauth2/v2/auth?` +
         `client_id=${clientId}&` +
-        `redirect_uri=${redirectUri}&` +
-        `scope=${scope}&` +
+        `redirect_uri=${encodeURIComponent(redirectUri)}&` +
+        `scope=${encodeURIComponent(scope)}&` +
         `response_type=code&` +
         `access_type=offline&` +
         `prompt=consent`
+
+      console.log("Redirecting to Google OAuth:", googleAuthUrl)
+      console.log("Client ID:", clientId)
+      console.log("Redirect URI:", redirectUri)
 
       // Store current page state
       localStorage.setItem("preAuthUrl", window.location.href)

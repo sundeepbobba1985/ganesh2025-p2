@@ -214,11 +214,11 @@ export default function Home() {
       setLoadingParticipants(true)
 
       try {
-        const response = await fetch("/api/get-participants")
+        const response = await fetch("/api/get-registrations")
         const data = await response.json()
 
         if (data.success) {
-          setParticipants(data.participants)
+          setParticipants(data.registrations || [])
         } else {
           alert("Failed to load participants data")
         }
@@ -334,38 +334,6 @@ export default function Home() {
     }
   }
 
-  const handleTestGoogleSheets = async () => {
-    const testData = {
-      fullName: "Test User",
-      email: "test@example.com",
-      address: "123 Test Street, Test City, TX 12345",
-      mobile: "555-123-4567",
-      adults: 2,
-      kids: 1,
-      timestamp: new Date().toISOString(),
-      signedInUser: isSignedIn ? "Yes" : "No",
-    }
-
-    try {
-      const response = await fetch("/api/submit-registration", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(testData),
-      })
-
-      if (response.ok) {
-        alert("✅ Test successful! Check your Google Sheet for the test data.")
-      } else {
-        alert("❌ Test failed. Check the console for errors.")
-      }
-    } catch (error) {
-      console.error("Test error:", error)
-      alert("❌ Test failed. Check the console for errors.")
-    }
-  }
-
   const isAdmin = () => {
     return userInfo?.email && adminEmails.includes(userInfo.email)
   }
@@ -379,6 +347,13 @@ export default function Home() {
       setNewBudget("")
       alert("Budget updated successfully!")
     }
+  }
+
+  const handleSignOut = () => {
+    setIsSignedIn(false)
+    setUserInfo(null)
+    localStorage.removeItem("googleAccessToken")
+    localStorage.removeItem("userInfo")
   }
 
   return (
@@ -579,14 +554,6 @@ export default function Home() {
                     </>
                   )}
                 </Button>
-                {isSignedIn && (
-                  <Button
-                    onClick={handleTestGoogleSheets}
-                    className="bg-blue-500 hover:bg-blue-600 text-white font-medium px-4 py-2 rounded-lg text-sm shadow-sm hover:shadow-md transition-all"
-                  >
-                    Test Google Sheets
-                  </Button>
-                )}
                 <Search className="w-5 h-5 text-gray-700 cursor-pointer hover:text-orange-600 transition-colors" />
               </nav>
             </div>
@@ -663,17 +630,6 @@ export default function Home() {
                   <HelpCircle className="w-5 h-5" />
                   <span className="font-medium">FAQ</span>
                 </a>
-                {isSignedIn && (
-                  <Button
-                    onClick={() => {
-                      handleTestGoogleSheets()
-                      setIsMobileMenuOpen(false)
-                    }}
-                    className="bg-blue-500 hover:bg-blue-600 text-white font-medium px-4 py-2 rounded-lg text-sm shadow-sm hover:shadow-md transition-all w-full"
-                  >
-                    Test Google Sheets
-                  </Button>
-                )}
               </nav>
             </div>
           )}

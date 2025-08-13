@@ -52,3 +52,73 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Authentication failed" }, { status: 500 })
   }
 }
+
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url)
+    const code = searchParams.get("code")
+    const error = searchParams.get("error")
+
+    if (error) {
+      // Redirect to home with error
+      return NextResponse.redirect(new URL(`/?error=${error}`, request.url))
+    }
+
+    if (!code) {
+      return NextResponse.redirect(new URL("/?error=no_code", request.url))
+    }
+
+    const clientId = process.env.GOOGLE_CLIENT_ID
+    const clientSecret = process.env.GOOGLE_CLIENT_SECRET
+    const redirectUri = `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/api/auth/google`
+
+    if (!clientId || !clientSecret) {
+      return NextResponse.redirect(new URL("/?error=config_error", request.url))
+    }
+
+    // Exchange authorization code for access token
+    const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        client_id: clientId,
+        client_secret: clientSecret,
+        code,
+        grant_type: "authorization_code",
+        redirect_uri: redirectUri,
+      }),
+    })
+
+    const tokenData = await tokenResponse.json()
+
+    if (!tokenResponse.ok) {
+      console.error("Token exchange failed:", tokenData)
+      return NextResponse.redirect(new URL("/?error=token_failed", request.url))
+    }
+
+    // Get user info from Google
+    const userResponse = await fetch("https://www.googleapis.com/oauth2/v2/userinfo", {
+      headers: { Authorization: `Bearer ${tokenData.access_token}` },
+    })
+
+    const userData = await userResponse.json()
+
+    if (!userResponse.ok) {
+      console.error("User info failed:", userData)
+      return NextResponse.redirect(new URL("/?error=user_info_failed", request.url))
+    }
+
+    // Redirect back to home with user data in URL params (for demo purposes)
+    // In production, you'd want to use secure session storage
+    const params = new URLSearchParams({
+      name: userData.name,
+      email: userData.email,
+      authenticated: "true",
+    })
+
+    return NextResponse.redirect(new URL(`/?${params.toString()}`, request.url))
+  } catch (error) {
+    console.error("Google OAuth GET error:", error)
+    return NextResponse.redirect(new URL("/?error=auth_failed", request.url))
+  }
+}

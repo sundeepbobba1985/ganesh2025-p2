@@ -69,10 +69,9 @@ export default function Home() {
 
   const handleGoogleSignIn = () => {
     if (!isSignedIn) {
-      // Real Google OAuth integration
       const clientId =
         process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "1234567890-abcdefghijklmnopqrstuvwxyz.apps.googleusercontent.com"
-      const redirectUri = window.location.origin
+      const redirectUri = `${window.location.origin}/api/auth/google`
       const scope = "openid email profile"
 
       const googleAuthUrl =
@@ -99,19 +98,32 @@ export default function Home() {
   }
 
   useEffect(() => {
-    // Check for OAuth callback
     const urlParams = new URLSearchParams(window.location.search)
-    const code = urlParams.get("code")
+    const name = urlParams.get("name")
+    const email = urlParams.get("email")
+    const authenticated = urlParams.get("authenticated")
+    const error = urlParams.get("error")
 
-    if (code) {
-      // Exchange code for access token
-      handleOAuthCallback(code)
+    if (error) {
+      console.error("OAuth error:", error)
+      alert("Authentication failed. Please try again.")
+      // Clean up URL
+      window.history.replaceState({}, document.title, window.location.pathname)
+    } else if (authenticated === "true" && name && email) {
+      // Set user info from URL parameters
+      setUserInfo({ name, email })
+      setIsSignedIn(true)
+
+      // Store in localStorage for persistence
+      localStorage.setItem("userInfo", JSON.stringify({ name, email }))
+
+      // Clean up URL
+      window.history.replaceState({}, document.title, window.location.pathname)
     } else {
       // Restore previous authentication state
       const savedUserInfo = localStorage.getItem("userInfo")
-      const savedToken = localStorage.getItem("googleAccessToken")
 
-      if (savedUserInfo && savedToken) {
+      if (savedUserInfo) {
         setUserInfo(JSON.parse(savedUserInfo))
         setIsSignedIn(true)
       }

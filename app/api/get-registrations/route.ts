@@ -6,7 +6,7 @@ export async function GET() {
 
     console.log("Fetching registrations from:", GOOGLE_SHEETS_URL)
 
-    const response = await fetch(`${GOOGLE_SHEETS_URL}?action=getRegistrations`, {
+    const response = await fetch(`${GOOGLE_SHEETS_URL}?action=getParticipants`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -24,7 +24,7 @@ export async function GET() {
 
     return Response.json({
       success: true,
-      registrations: data.registrations || [],
+      registrations: data.participants || [],
     })
   } catch (error) {
     console.error("Error fetching registrations:", error)

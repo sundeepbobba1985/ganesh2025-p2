@@ -11,36 +11,64 @@
 \`\`\`javascript
 function doPost(e) {
   try {
-    // Get the active sheet
-    const sheet = SpreadsheetApp.getActiveSheet()
     const data = JSON.parse(e.postData.contents)
+    const action = data.action
+    
+    if (action === 'addExpense') {
+      // Handle expense data
+      const expenseSheet = getOrCreateSheet('Expenses')
+      
+      // Add headers if this is the first row
+      if (expenseSheet.getLastRow() === 0) {
+        expenseSheet
+          .getRange(1, 1, 1, 8)
+          .setValues([["Timestamp", "Category", "Description", "Amount", "Date", "Paid By", "Receipt", "Submitted By"]])
+      }
+      
+      // Add the expense data
+      expenseSheet.appendRow([
+        data.data.timestamp,
+        data.data.category,
+        data.data.description,
+        data.data.amount,
+        data.data.date,
+        data.data.paidBy,
+        data.data.receipt,
+        data.data.submittedBy,
+      ])
+      
+      return ContentService
+        .createTextOutput(JSON.stringify({ success: true, message: "Expense added successfully" }))
+        .setMimeType(ContentService.MimeType.JSON)
+    } else {
+      // Handle registration data (existing code)
+      const registrationSheet = getOrCreateSheet('Registrations')
+      
+      // Add headers if this is the first row
+      if (registrationSheet.getLastRow() === 0) {
+        registrationSheet
+          .getRange(1, 1, 1, 8)
+          .setValues([["Timestamp", "Full Name", "Email", "Address", "Mobile", "Adults", "Kids", "Signed In"]])
+      }
 
-    // Add headers if this is the first row
-    if (sheet.getLastRow() === 0) {
-      sheet
-        .getRange(1, 1, 1, 8)
-        .setValues([["Timestamp", "Full Name", "Email", "Address", "Mobile", "Adults", "Kids", "Signed In"]])
+      // Add the registration data
+      registrationSheet.appendRow([
+        data.timestamp,
+        data.fullName,
+        data.email,
+        data.address,
+        data.mobile,
+        data.adults,
+        data.kids,
+        data.signedInUser,
+      ])
+
+      return ContentService
+        .createTextOutput(JSON.stringify({ success: true }))
+        .setMimeType(ContentService.MimeType.JSON)
     }
-
-    // Add the registration data
-    sheet.appendRow([
-      data.timestamp,
-      data.fullName,
-      data.email,
-      data.address,
-      data.mobile,
-      data.adults,
-      data.kids,
-      data.signedInUser,
-    ])
-
-    // Return success response
-    return ContentService
-      .createTextOutput(JSON.stringify({ success: true }))
-      .setMimeType(ContentService.MimeType.JSON)
       
   } catch (error) {
-    // Return error response
     return ContentService
       .createTextOutput(JSON.stringify({ error: error.toString() }))
       .setMimeType(ContentService.MimeType.JSON)
@@ -52,8 +80,8 @@ function doGet(e) {
     const action = e.parameter.action
     
     if (action === 'getParticipants') {
-      const sheet = SpreadsheetApp.getActiveSheet()
-      const data = sheet.getDataRange().getValues()
+      const registrationSheet = getOrCreateSheet('Registrations')
+      const data = registrationSheet.getDataRange().getValues()
       
       // Skip header row and extract participant data
       const participants = data.slice(1).map(row => ({
@@ -68,6 +96,27 @@ function doGet(e) {
         .setMimeType(ContentService.MimeType.JSON)
     }
     
+    if (action === 'getExpenses') {
+      const expenseSheet = getOrCreateSheet('Expenses')
+      const data = expenseSheet.getDataRange().getValues()
+      
+      // Skip header row and extract expense data
+      const expenses = data.slice(1).map(row => ({
+        timestamp: row[0],
+        category: row[1],
+        description: row[2],
+        amount: parseFloat(row[3]) || 0,
+        date: row[4],
+        paidBy: row[5],
+        receipt: row[6],
+        submittedBy: row[7]
+      }))
+      
+      return ContentService
+        .createTextOutput(JSON.stringify({ success: true, expenses: expenses }))
+        .setMimeType(ContentService.MimeType.JSON)
+    }
+    
     // Default response for unknown actions
     return ContentService
       .createTextOutput(JSON.stringify({ error: "Unknown action" }))
@@ -78,6 +127,18 @@ function doGet(e) {
       .createTextOutput(JSON.stringify({ error: error.toString() }))
       .setMimeType(ContentService.MimeType.JSON)
   }
+}
+
+// Helper function to create or get sheets
+function getOrCreateSheet(sheetName) {
+  const spreadsheet = SpreadsheetApp.getActiveSpreadsheet()
+  let sheet = spreadsheet.getSheetByName(sheetName)
+  
+  if (!sheet) {
+    sheet = spreadsheet.insertSheet(sheetName)
+  }
+  
+  return sheet
 }
 \`\`\`
 
@@ -103,11 +164,11 @@ function doGet(e) {
 
 Once deployed, test the registration form on your website. Successful registrations will appear as new rows in your Google Sheet with all the form data and timestamps.
 
-**New Feature**: The Participants section will now display all registered participants when accessed by signed-in users.
+**New Feature**: The Participants section will now display all registered participants when accessed by signed-in users. Additionally, the Expenses section will display all recorded expenses.
 
 ## Troubleshooting
 
 - Make sure the Google Apps Script is deployed with "Anyone" access
 - Verify the environment variable is set correctly in Vercel
-- Check the Google Apps Script execution logs if registrations aren't appearing
-- If participants aren't loading, ensure the Google Apps Script includes both `doPost` and `doGet` functions
+- Check the Google Apps Script execution logs if registrations or expenses aren't appearing
+- If participants or expenses aren't loading, ensure the Google Apps Script includes both `doPost` and `doGet` functions

@@ -21,6 +21,7 @@ import {
   Music,
   Heart,
   X,
+  Settings,
 } from "lucide-react"
 
 export default function Home() {
@@ -57,6 +58,99 @@ export default function Home() {
     receipt: "",
   })
 
+  const [adminEmails] = useState([
+    "admin1@gmail.com", // Replace with actual admin emails
+    "admin2@gmail.com",
+    "admin3@gmail.com",
+  ])
+  const [eventBudget, setEventBudget] = useState(2250) // Default budget
+  const [showBudgetConfig, setShowBudgetConfig] = useState(false)
+  const [newBudget, setNewBudget] = useState("")
+
+  const handleGoogleSignIn = () => {
+    if (!isSignedIn) {
+      // Real Google OAuth integration
+      const clientId =
+        process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "1234567890-abcdefghijklmnopqrstuvwxyz.apps.googleusercontent.com"
+      const redirectUri = window.location.origin
+      const scope = "openid email profile"
+
+      const googleAuthUrl =
+        `https://accounts.google.com/oauth/authorize?` +
+        `client_id=${clientId}&` +
+        `redirect_uri=${redirectUri}&` +
+        `scope=${scope}&` +
+        `response_type=code&` +
+        `access_type=offline&` +
+        `prompt=consent`
+
+      // Store current page state
+      localStorage.setItem("preAuthUrl", window.location.href)
+
+      // Redirect to Google OAuth
+      window.location.href = googleAuthUrl
+    } else {
+      // Sign out
+      setIsSignedIn(false)
+      setUserInfo(null)
+      localStorage.removeItem("googleAccessToken")
+      localStorage.removeItem("userInfo")
+    }
+  }
+
+  useEffect(() => {
+    // Check for OAuth callback
+    const urlParams = new URLSearchParams(window.location.search)
+    const code = urlParams.get("code")
+
+    if (code) {
+      // Exchange code for access token
+      handleOAuthCallback(code)
+    } else {
+      // Restore previous authentication state
+      const savedUserInfo = localStorage.getItem("userInfo")
+      const savedToken = localStorage.getItem("googleAccessToken")
+
+      if (savedUserInfo && savedToken) {
+        setUserInfo(JSON.parse(savedUserInfo))
+        setIsSignedIn(true)
+      }
+    }
+  }, [])
+
+  const handleOAuthCallback = async (code: string) => {
+    try {
+      // In a real implementation, you'd exchange the code for an access token on your backend
+      // For now, we'll use Google's userinfo endpoint directly
+      const response = await fetch("/api/auth/google", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code }),
+      })
+
+      if (response.ok) {
+        const userData = await response.json()
+        setUserInfo({ name: userData.name, email: userData.email })
+        setIsSignedIn(true)
+
+        // Store in localStorage for persistence
+        localStorage.setItem("userInfo", JSON.stringify({ name: userData.name, email: userData.email }))
+        localStorage.setItem("googleAccessToken", userData.access_token)
+
+        // Clean up URL and redirect back
+        window.history.replaceState({}, document.title, window.location.pathname)
+
+        const preAuthUrl = localStorage.getItem("preAuthUrl")
+        if (preAuthUrl && preAuthUrl !== window.location.href) {
+          localStorage.removeItem("preAuthUrl")
+        }
+      }
+    } catch (error) {
+      console.error("OAuth callback error:", error)
+      alert("Authentication failed. Please try again.")
+    }
+  }
+
   useEffect(() => {
     const newSparkles = Array.from({ length: 8 }, (_, i) => ({
       id: i,
@@ -73,17 +167,6 @@ export default function Home() {
 
     return () => clearTimeout(timer)
   }, [])
-
-  const handleGoogleSignIn = () => {
-    if (!isSignedIn) {
-      // Simulate Google sign-in
-      setIsSignedIn(true)
-      setUserInfo({ name: "User", email: "user@example.com" })
-    } else {
-      setIsSignedIn(false)
-      setUserInfo(null)
-    }
-  }
 
   const handleProtectedSection = async (sectionName: string) => {
     if (!isSignedIn) {
@@ -251,6 +334,21 @@ export default function Home() {
     }
   }
 
+  const isAdmin = () => {
+    return userInfo?.email && adminEmails.includes(userInfo.email)
+  }
+
+  const handleBudgetUpdate = (e: React.FormEvent) => {
+    e.preventDefault()
+    const budget = Number.parseFloat(newBudget)
+    if (budget > 0) {
+      setEventBudget(budget)
+      setShowBudgetConfig(false)
+      setNewBudget("")
+      alert("Budget updated successfully!")
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-red-50 relative">
       <div
@@ -276,8 +374,12 @@ export default function Home() {
 
       <style jsx>{`
         @keyframes fadeOut {
-          from { opacity: 1; }
-          to { opacity: 0; }
+          from {
+            opacity: 1;
+          }
+          to {
+            opacity: 0;
+          }
         }
       `}</style>
 
@@ -1201,6 +1303,15 @@ export default function Home() {
                   <Plus className="w-4 h-4" />
                   Add Expense
                 </button>
+                {isAdmin() && (
+                  <button
+                    onClick={() => setShowBudgetConfig(true)}
+                    className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+                  >
+                    <Settings className="w-4 h-4" />
+                    Configure Budget
+                  </button>
+                )}
               </div>
 
               {loadingExpenses ? (
@@ -1214,7 +1325,7 @@ export default function Home() {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                     <div className="bg-gradient-to-r from-green-500 to-green-600 text-white p-4 rounded-lg">
                       <h3 className="text-sm font-medium opacity-90">Total Budget</h3>
-                      <p className="text-2xl font-bold">$5,000</p>
+                      <p className="text-2xl font-bold">${eventBudget.toLocaleString()}</p>
                     </div>
                     <div className="bg-gradient-to-r from-red-500 to-red-600 text-white p-4 rounded-lg">
                       <h3 className="text-sm font-medium opacity-90">Total Spent</h3>
@@ -1227,7 +1338,8 @@ export default function Home() {
                       <p className="text-2xl font-bold">
                         $
                         {(
-                          5000 - expenses.reduce((sum, expense) => sum + Number.parseFloat(expense.amount || 0), 0)
+                          eventBudget -
+                          expenses.reduce((sum, expense) => sum + Number.parseFloat(expense.amount || 0), 0)
                         ).toFixed(2)}
                       </p>
                     </div>
@@ -1265,6 +1377,58 @@ export default function Home() {
                 </div>
               )}
             </div>
+          </div>
+        </div>
+      )}
+
+      {showBudgetConfig && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
+            <div className="p-6 border-b border-gray-200">
+              <div className="flex justify-between items-center">
+                <h2 className="text-xl font-bold text-gray-900">Configure Event Budget</h2>
+                <button onClick={() => setShowBudgetConfig(false)} className="text-gray-400 hover:text-gray-600">
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+            </div>
+
+            <form onSubmit={handleBudgetUpdate} className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Event Budget ($)</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={newBudget}
+                  onChange={(e) => setNewBudget(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder={`Current: $${eventBudget.toLocaleString()}`}
+                  required
+                />
+              </div>
+
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                <p className="text-sm text-yellow-800">
+                  <strong>Admin Access:</strong> Only authorized administrators can modify the event budget.
+                </p>
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setShowBudgetConfig(false)}
+                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  Update Budget
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

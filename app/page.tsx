@@ -74,6 +74,23 @@ export default function Home() {
       const redirectUri = `${window.location.origin}/api/auth/google`
       const scope = "openid email profile"
 
+      console.log("=== OAUTH DEBUG INFO ===")
+      console.log("Environment GOOGLE_CLIENT_ID:", process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID)
+      console.log("Using Client ID:", clientId)
+      console.log("Redirect URI:", redirectUri)
+      console.log("Current Origin:", window.location.origin)
+
+      // Check if using fallback client ID
+      if (clientId === "1234567890-abcdefghijklmnopqrstuvwxyz.apps.googleusercontent.com") {
+        console.error(
+          "⚠️ WARNING: Using fallback client ID! Set NEXT_PUBLIC_GOOGLE_CLIENT_ID in Vercel environment variables",
+        )
+        alert(
+          "OAuth not configured! Please set NEXT_PUBLIC_GOOGLE_CLIENT_ID environment variable in Vercel Project Settings.",
+        )
+        return
+      }
+
       const googleAuthUrl =
         `https://accounts.google.com/o/oauth2/v2/auth?` +
         `client_id=${clientId}&` +
@@ -83,9 +100,8 @@ export default function Home() {
         `access_type=offline&` +
         `prompt=consent`
 
-      console.log("Redirecting to Google OAuth:", googleAuthUrl)
-      console.log("Client ID:", clientId)
-      console.log("Redirect URI:", redirectUri)
+      console.log("Full OAuth URL:", googleAuthUrl)
+      console.log("========================")
 
       // Store current page state
       localStorage.setItem("preAuthUrl", window.location.href)

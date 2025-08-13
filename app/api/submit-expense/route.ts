@@ -3,6 +3,7 @@ import { type NextRequest, NextResponse } from "next/server"
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
+    console.log("Received expense data:", body)
 
     const expenseData = {
       category: body.category,
@@ -15,28 +16,54 @@ export async function POST(request: NextRequest) {
       timestamp: body.timestamp,
     }
 
+    console.log("Formatted expense data:", expenseData)
+
     // Send to Google Sheets
     const googleSheetsUrl =
       process.env.GOOGLE_SHEETS_URL ||
-      "https://script.google.com/macros/s/AKfycbxVEpIMwrfKlyveAdvYuJ1U-o8WiAG3KC2of8pjL9gNq7KaHY68aksEnsoL8D9fXnLjLA/exec"
+      "https://script.google.com/macros/s/AKfycbwoJts0cgZkCE2Zbl3jXEtnubG1v6O3KCGzveolK5lJYsmbvtLbkWOIEEq5g8Koqu8Jjw/exec"
+
+    console.log("Sending to Google Sheets URL:", googleSheetsUrl)
+
+    const requestPayload = {
+      action: "addExpense",
+      data: expenseData,
+    }
+
+    console.log("Request payload:", requestPayload)
 
     const response = await fetch(googleSheetsUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        action: "addExpense",
-        data: expenseData,
-      }),
+      body: JSON.stringify(requestPayload),
     })
 
+    console.log("Google Sheets response status:", response.status)
+    console.log("Google Sheets response headers:", Object.fromEntries(response.headers.entries()))
+
     const result = await response.text()
+    console.log("Google Sheets response text:", result)
+
+    // Try to parse as JSON if possible
+    let parsedResult
+    try {
+      parsedResult = JSON.parse(result)
+      console.log("Parsed Google Sheets response:", parsedResult)
+    } catch (parseError) {
+      console.log("Could not parse response as JSON:", parseError)
+      parsedResult = { rawResponse: result }
+    }
+
+    if (!response.ok) {
+      throw new Error(`Google Sheets API returned ${response.status}: ${result}`)
+    }
 
     return NextResponse.json({
       success: true,
       message: "Expense recorded successfully",
-      result: result,
+      result: parsedResult,
     })
   } catch (error) {
     console.error("Error submitting expense:", error)
@@ -44,6 +71,7 @@ export async function POST(request: NextRequest) {
       {
         success: false,
         message: "Failed to record expense",
+        error: error.message,
       },
       { status: 500 },
     )

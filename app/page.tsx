@@ -120,13 +120,15 @@ export default function Home() {
       setLoadingExpenses(true)
 
       try {
+        console.log("Fetching expenses from API...")
         const response = await fetch("/api/get-expenses")
         const data = await response.json()
+        console.log("Expenses API response:", data)
 
         if (data.success) {
           setExpenses(data.expenses)
         } else {
-          alert("Failed to load expenses data")
+          alert(`Failed to load expenses data: ${data.error || "Unknown error"}`)
         }
       } catch (error) {
         console.error("Error fetching expenses:", error)
@@ -177,6 +179,8 @@ export default function Home() {
   const handleExpenseSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
+    console.log("Submitting expense:", expenseFormData)
+
     try {
       const response = await fetch("/api/submit-expense", {
         method: "POST",
@@ -191,6 +195,7 @@ export default function Home() {
       })
 
       const result = await response.json()
+      console.log("Expense submission response:", result)
 
       if (result.success) {
         alert("Expense recorded successfully!")
@@ -206,7 +211,7 @@ export default function Home() {
         // Refresh expenses list
         handleProtectedSection("Financials")
       } else {
-        alert("Failed to record expense. Please try again.")
+        alert(`Failed to record expense: ${result.error || "Unknown error"}`)
       }
     } catch (error) {
       console.error("Error submitting expense:", error)

@@ -214,13 +214,19 @@ export default function Home() {
       setLoadingParticipants(true)
 
       try {
+        console.log("Fetching participants data...")
         const response = await fetch("/api/get-registrations")
+        console.log("API Response status:", response.status)
+
         const data = await response.json()
+        console.log("API Response data:", data)
 
         if (data.success) {
+          console.log("Participants loaded:", data.registrations?.length || 0)
           setParticipants(data.registrations || [])
         } else {
-          alert("Failed to load participants data")
+          console.error("API returned error:", data.error)
+          alert(`Failed to load participants data: ${data.error || "Unknown error"}`)
         }
       } catch (error) {
         console.error("Error fetching participants:", error)

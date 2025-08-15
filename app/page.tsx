@@ -21,6 +21,10 @@ import {
   Heart,
   X,
   Settings,
+  Upload,
+  ExternalLink,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react"
 
 export default function Home() {
@@ -76,6 +80,45 @@ export default function Home() {
   const [participantsLoading, setParticipantsLoading] = useState(false)
   const [participantsError, setParticipantsError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const [showGallery, setShowGallery] = useState(false)
+  const [currentImageIndex, setCurrentImageIndex] = useState(0)
+
+  // Sample gallery images - replace with actual event photos
+  const galleryImages = [
+    {
+      url: "/ganesh-idol-flowers.png",
+      caption: "Beautiful Ganesh idol with traditional decorations",
+    },
+    {
+      url: "/ganesh-community-celebration.png",
+      caption: "Community members celebrating together",
+    },
+    {
+      url: "/indian-dance-performance.png",
+      caption: "Cultural performances during the festival",
+    },
+    {
+      url: "/ganesh-procession.png",
+      caption: "Ganesh procession through the community",
+    },
+    {
+      url: "/indian-prasadam-offering.png",
+      caption: "Traditional prasadam and community feast",
+    },
+  ]
+
+  const handleGallerySection = () => {
+    setShowGallery(true)
+  }
+
+  const nextImage = () => {
+    setCurrentImageIndex((prev) => (prev + 1) % galleryImages.length)
+  }
+
+  const prevImage = () => {
+    setCurrentImageIndex((prev) => (prev - 1 + galleryImages.length) % galleryImages.length)
+  }
 
   const handleGoogleSignIn = () => {
     if (!isSignedIn) {
@@ -650,13 +693,13 @@ export default function Home() {
                   <Calendar className="w-4 h-4" />
                   <span className="text-sm font-medium">Events</span>
                 </a>
-                <a
-                  href="#"
+                <button
+                  onClick={handleGallerySection}
                   className="flex items-center space-x-2 text-gray-700 hover:text-orange-600 transition-colors"
                 >
                   <Trophy className="w-4 h-4" />
                   <span className="text-sm font-medium">Gallery</span>
-                </a>
+                </button>
                 <button
                   onClick={() => handleProtectedSection("Financials")}
                   className="flex items-center space-x-2 text-gray-700 hover:text-orange-600 transition-colors"
@@ -759,13 +802,16 @@ export default function Home() {
                   <Calendar className="w-5 h-5" />
                   <span className="font-medium">Events</span>
                 </a>
-                <a
-                  href="#"
-                  className="flex items-center space-x-3 text-gray-700 hover:text-orange-600 transition-colors py-2"
+                <button
+                  onClick={() => {
+                    handleGallerySection()
+                    setIsMobileMenuOpen(false)
+                  }}
+                  className="flex items-center space-x-3 text-gray-700 hover:text-orange-600 transition-colors py-2 text-left"
                 >
                   <Trophy className="w-5 h-5" />
                   <span className="font-medium">Gallery</span>
-                </a>
+                </button>
                 <button
                   onClick={() => {
                     handleProtectedSection("Financials")
@@ -1733,6 +1779,104 @@ export default function Home() {
                   </Button>
                 </div>
               </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showGallery && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-gray-800">Event Gallery</h2>
+                <button
+                  onClick={() => setShowGallery(false)}
+                  className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
+                >
+                  ×
+                </button>
+              </div>
+
+              {/* Google Drive Upload Section */}
+              <div className="mb-8 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+                <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center">
+                  <Upload className="w-5 h-5 mr-2 text-blue-600" />
+                  Share Your Photos
+                </h3>
+                <p className="text-gray-600 mb-4">
+                  Help us capture all the beautiful moments! Upload your photos to our community gallery.
+                </p>
+                <a
+                  href="https://drive.google.com/drive/folders/1BxYZ3aBcDeFgHiJkLmNoPqRsTuVwXyZ0?usp=sharing"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  <ExternalLink className="w-4 h-4 mr-2" />
+                  Upload to Google Drive
+                </a>
+                <p className="text-sm text-gray-500 mt-2">
+                  Click the link above to access our shared Google Drive folder and upload your event photos.
+                </p>
+              </div>
+
+              {/* Slideshow Section */}
+              <div className="relative">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">Event Highlights</h3>
+
+                {/* Main Image Display */}
+                <div className="relative bg-gray-100 rounded-lg overflow-hidden mb-4">
+                  <img
+                    src={galleryImages[currentImageIndex].url || "/placeholder.svg"}
+                    alt={galleryImages[currentImageIndex].caption}
+                    className="w-full h-96 object-cover"
+                  />
+
+                  {/* Navigation Arrows */}
+                  <button
+                    onClick={prevImage}
+                    className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-75 transition-all"
+                  >
+                    <ChevronLeft className="w-6 h-6" />
+                  </button>
+                  <button
+                    onClick={nextImage}
+                    className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-75 transition-all"
+                  >
+                    <ChevronRight className="w-6 h-6" />
+                  </button>
+
+                  {/* Image Counter */}
+                  <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-50 text-white px-3 py-1 rounded-full text-sm">
+                    {currentImageIndex + 1} / {galleryImages.length}
+                  </div>
+                </div>
+
+                {/* Image Caption */}
+                <p className="text-center text-gray-600 mb-6">{galleryImages[currentImageIndex].caption}</p>
+
+                {/* Thumbnail Navigation */}
+                <div className="flex justify-center space-x-2 overflow-x-auto pb-2">
+                  {galleryImages.map((image, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setCurrentImageIndex(index)}
+                      className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all ${
+                        index === currentImageIndex
+                          ? "border-orange-500 opacity-100"
+                          : "border-gray-300 opacity-60 hover:opacity-80"
+                      }`}
+                    >
+                      <img
+                        src={image.url || "/placeholder.svg"}
+                        alt={`Thumbnail ${index + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         </div>

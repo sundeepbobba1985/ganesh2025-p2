@@ -10,20 +10,24 @@ export async function POST(request: NextRequest) {
     const googleSheetsUrl =
       "https://script.google.com/macros/s/AKfycbwxWQxMNhBs5mLBCq5dvDqEh21iVEsZ9l8HWjnufKcvQ_PiyzWfEq9rBAqs_YM199eP3g/exec"
 
-    const formData = new FormData()
-    formData.append("action", "addVolunteer")
-    formData.append("name", body.name || "")
-    formData.append("email", body.email || "")
-    formData.append("phone", body.phone || "")
-    formData.append("volunteerType", body.volunteerType || "")
-    formData.append("cleanupDate", body.cleanupDate || "")
-    formData.append("timestamp", new Date().toISOString())
+    const requestData = {
+      action: "addVolunteer",
+      name: body.name || "",
+      email: body.email || "",
+      phone: body.phone || "",
+      volunteerType: body.volunteerType || "",
+      cleanupDate: body.cleanupDate || "",
+      timestamp: new Date().toISOString(),
+    }
 
-    console.log("[v0] Sending to Google Apps Script with FormData")
+    console.log("[v0] Sending to Google Apps Script with JSON data:", requestData)
 
     const response = await fetch(googleSheetsUrl, {
       method: "POST",
-      body: formData,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(requestData),
     })
 
     console.log("[v0] Google Apps Script response status:", response.status)

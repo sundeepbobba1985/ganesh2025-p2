@@ -265,6 +265,26 @@ export default function Home() {
     console.log(`Accessing ${sectionName} section`)
   }
 
+  const handleMenuClick = async (sectionName: string) => {
+    if (
+      !isSignedIn &&
+      (sectionName === "Participants" || sectionName === "Financials" || sectionName === "Registration")
+    ) {
+      alert("Please sign in with Google to access this section.")
+      return
+    }
+    if (sectionName === "Registration") {
+      setShowRegistrationForm(true)
+      return
+    }
+    if (sectionName === "Participants") {
+      setShowParticipants(true)
+      const storedParticipants = JSON.parse(localStorage.getItem("registrations") || "[]")
+      setParticipants(storedParticipants)
+      return
+    }
+  }
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
@@ -405,8 +425,7 @@ export default function Home() {
   }
 
   useEffect(() => {
-    const storedParticipants = JSON.parse(localStorage.getItem("registrations") || "[]")
-    setParticipants(storedParticipants)
+    loadParticipants()
   }, [])
 
   return (
@@ -1109,7 +1128,6 @@ export default function Home() {
                           <div className="flex justify-between items-start">
                             <div>
                               <h4 className="font-semibold text-gray-900">{participant.name}</h4>
-                              <p className="text-gray-600 text-sm">{participant.email}</p>
                               <div className="flex gap-4 mt-2 text-sm text-gray-500">
                                 <span>Adults: {participant.adults || 0}</span>
                                 <span>Kids: {participant.kids || 0}</span>

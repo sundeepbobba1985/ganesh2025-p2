@@ -21,10 +21,7 @@ import {
   Heart,
   X,
   Settings,
-  Upload,
   ExternalLink,
-  ChevronLeft,
-  ChevronRight,
 } from "lucide-react"
 
 export default function Home() {
@@ -82,70 +79,14 @@ export default function Home() {
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const [showGallery, setShowGallery] = useState(false)
-  const [currentImageIndex, setCurrentImageIndex] = useState(0)
-  const [showAddImages, setShowAddImages] = useState(false)
   const [newImageUrl, setNewImageUrl] = useState("")
   const [newImageCaption, setNewImageCaption] = useState("")
-
-  const [loadingGalleryImages, setLoadingGalleryImages] = useState(false)
-
-  const [galleryImages, setGalleryImages] = useState([
-    {
-      url: "/ganesh-idol-flowers.png",
-      caption: "Beautiful Ganesh idol with traditional decorations",
-    },
-    {
-      url: "/ganesh-community-celebration.png",
-      caption: "Community members celebrating together",
-    },
-    {
-      url: "/indian-dance-performance.png",
-      caption: "Cultural performances during the festival",
-    },
-    {
-      url: "/ganesh-procession.png",
-      caption: "Ganesh procession through the community",
-    },
-    {
-      url: "/indian-prasadam-offering.png",
-      caption: "Traditional prasadam and community feast",
-    },
-  ])
-
-  const loadGoogleDriveImages = async () => {
-    setLoadingGalleryImages(true)
-    try {
-      const response = await fetch("/api/get-drive-images")
-      const data = await response.json()
-
-      if (data.success && data.images.length > 0) {
-        // Replace sample images with Google Drive images
-        setGalleryImages(
-          data.images.map((img: any) => ({
-            url: img.src,
-            caption: img.caption,
-          })),
-        )
-      }
-    } catch (error) {
-      console.error("Failed to load Google Drive images:", error)
-      // Keep sample images if API fails
-    } finally {
-      setLoadingGalleryImages(false)
-    }
-  }
+  const [galleryImages, setGalleryImages] = useState<any[]>([])
+  const [showAddImages, setShowAddImages] = useState(false)
+  const [currentImageIndex, setCurrentImageIndex] = useState(0)
 
   const handleGallerySection = () => {
     setShowGallery(true)
-    loadGoogleDriveImages()
-  }
-
-  const nextImage = () => {
-    setCurrentImageIndex((prev) => (prev + 1) % galleryImages.length)
-  }
-
-  const prevImage = () => {
-    setCurrentImageIndex((prev) => (prev - 1 + galleryImages.length) % galleryImages.length)
   }
 
   const isAdmin = () => {
@@ -1839,231 +1780,50 @@ export default function Home() {
 
       {showGallery && (
         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-lg max-w-2xl w-full">
             <div className="p-6">
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-bold text-gray-800">Event Gallery</h2>
-                <div className="flex items-center space-x-2">
-                  {isAdmin() && (
-                    <button
-                      onClick={() => setShowAddImages(true)}
-                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm flex items-center space-x-2 transition-colors"
-                    >
-                      <Plus className="w-4 h-4" />
-                      <span>Add Images</span>
-                    </button>
-                  )}
-                  <button
-                    onClick={() => setShowGallery(false)}
-                    className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
-                  >
-                    ×
-                  </button>
-                </div>
-              </div>
-
-              {/* Google Drive Upload Section */}
-              <div className="mb-8 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
-                <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center">
-                  <Upload className="w-5 h-5 mr-2 text-blue-600" />
-                  Share Your Photos
-                </h3>
-                <p className="text-gray-600 mb-4">
-                  Help us capture all the beautiful moments! Upload your photos to our community gallery.
-                </p>
-                <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
-                  <h4 className="font-semibold text-green-800 mb-2">📸 Ready to Upload!</h4>
-                  <p className="text-green-700 text-sm mb-3">
-                    Click the button below to upload your photos directly to our community gallery folder.
-                  </p>
-                  <ul className="text-green-700 text-sm space-y-1">
-                    <li>• Upload photos from the event</li>
-                    <li>• Share candid moments and group photos</li>
-                    <li>• Help create lasting memories for everyone</li>
-                  </ul>
-                </div>
-                <a
-                  href="https://drive.google.com/drive/folders/12flkHyZcjaquQ0qLY8KgY7LEIZEP2Krf"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                <button
+                  onClick={() => setShowGallery(false)}
+                  className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
                 >
-                  <ExternalLink className="w-4 h-4 mr-2" />
-                  Upload Photos to Google Drive
-                </a>
-                <p className="text-sm text-gray-500 mt-2">
-                  Opens in a new tab. You can drag and drop photos directly into the folder.
-                </p>
-              </div>
-
-              {/* Slideshow Section */}
-              {galleryImages.length > 0 ? (
-                <div className="relative">
-                  <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-lg font-semibold text-gray-800">Event Highlights</h3>
-                    <button
-                      onClick={loadGoogleDriveImages}
-                      disabled={loadingGalleryImages}
-                      className="flex items-center space-x-2 px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors disabled:opacity-50"
-                    >
-                      <svg
-                        className={`w-4 h-4 ${loadingGalleryImages ? "animate-spin" : ""}`}
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                        />
-                      </svg>
-                      <span>{loadingGalleryImages ? "Loading..." : "Refresh"}</span>
-                    </button>
-                  </div>
-
-                  {/* Main Image Display */}
-                  <div className="relative bg-gray-100 rounded-lg overflow-hidden mb-4">
-                    <img
-                      src={galleryImages[currentImageIndex].url || "/placeholder.svg"}
-                      alt={galleryImages[currentImageIndex].caption}
-                      className="w-full h-96 object-cover"
-                    />
-
-                    {isAdmin() && (
-                      <button
-                        onClick={() => handleRemoveImage(currentImageIndex)}
-                        className="absolute top-4 right-4 bg-red-500 hover:bg-red-600 text-white p-2 rounded-full transition-colors"
-                        title="Remove this image"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    )}
-
-                    {/* Navigation Arrows */}
-                    {galleryImages.length > 1 && (
-                      <>
-                        <button
-                          onClick={prevImage}
-                          className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-75 transition-all"
-                        >
-                          <ChevronLeft className="w-6 h-6" />
-                        </button>
-                        <button
-                          onClick={nextImage}
-                          className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-75 transition-all"
-                        >
-                          <ChevronRight className="w-6 h-6" />
-                        </button>
-                      </>
-                    )}
-
-                    {/* Image Counter */}
-                    <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-50 text-white px-3 py-1 rounded-full text-sm">
-                      {currentImageIndex + 1} / {galleryImages.length}
-                    </div>
-                  </div>
-
-                  {/* Image Caption */}
-                  <p className="text-center text-gray-600 mb-6">{galleryImages[currentImageIndex].caption}</p>
-
-                  {/* Thumbnail Navigation */}
-                  {galleryImages.length > 1 && (
-                    <div className="flex justify-center space-x-2 overflow-x-auto pb-2">
-                      {galleryImages.map((image, index) => (
-                        <button
-                          key={index}
-                          onClick={() => setCurrentImageIndex(index)}
-                          className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all ${
-                            index === currentImageIndex
-                              ? "border-orange-500 opacity-100"
-                              : "border-gray-300 opacity-60 hover:opacity-80"
-                          }`}
-                        >
-                          <img
-                            src={image.url || "/placeholder.svg"}
-                            alt={`Thumbnail ${index + 1}`}
-                            className="w-full h-full object-cover"
-                          />
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <p className="text-gray-600">No images in gallery yet.</p>
-                  {isAdmin() && (
-                    <button
-                      onClick={() => setShowAddImages(true)}
-                      className="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg"
-                    >
-                      Add First Image
-                    </button>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {showAddImages && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-md w-full">
-            <div className="p-6">
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-xl font-bold text-gray-800">Add Gallery Image</h3>
-                <button onClick={() => setShowAddImages(false)} className="text-gray-500 hover:text-gray-700">
-                  <X className="w-6 h-6" />
+                  ×
                 </button>
               </div>
 
-              <form onSubmit={handleAddImage} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Image URL *</label>
-                  <input
-                    type="url"
-                    value={newImageUrl}
-                    onChange={(e) => setNewImageUrl(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="https://drive.google.com/uc?id=YOUR_FILE_ID"
-                    required
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    For Google Drive: Right-click image → Get link → Change to "Anyone with link can view" → Copy link
+              <div className="text-center py-8">
+                <div className="mb-6">
+                  <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full mx-auto mb-4 flex items-center justify-center">
+                    <svg className="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-800 mb-2">View & Share Event Photos</h3>
+                  <p className="text-gray-600 mb-6">
+                    Access our community photo gallery to view all the beautiful moments from our Ganesh Chaturthi
+                    celebration. You can also upload your own photos to share with everyone!
                   </p>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Caption *</label>
-                  <input
-                    type="text"
-                    value={newImageCaption}
-                    onChange={(e) => setNewImageCaption(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Describe this image..."
-                    required
-                  />
-                </div>
+                <div className="space-y-4">
+                  <a
+                    href="https://drive.google.com/drive/folders/12flkHyZcjaquQ0qLY8KgY7LEIZEP2Krf"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-lg font-medium"
+                  >
+                    <ExternalLink className="w-5 h-5 mr-2" />
+                    Open Photo Gallery
+                  </a>
 
-                <div className="flex space-x-3 pt-4">
-                  <button
-                    type="button"
-                    onClick={() => setShowAddImages(false)}
-                    className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                  >
-                    Add Image
-                  </button>
+                  <div className="text-sm text-gray-500 space-y-1">
+                    <p>• View and download all event photos</p>
+                    <p>• Upload your own photos to share</p>
+                    <p>• Access from any device</p>
+                  </div>
                 </div>
-              </form>
+              </div>
             </div>
           </div>
         </div>

@@ -22,6 +22,7 @@ import {
   Heart,
   X,
   Settings,
+  Baby,
 } from "lucide-react"
 
 export default function Home() {
@@ -29,9 +30,7 @@ export default function Home() {
   const [userInfo, setUserInfo] = useState<{ name: string; email: string } | null>(null)
   const [showRegistrationForm, setShowRegistrationForm] = useState(false)
   const [showParticipants, setShowParticipants] = useState(false)
-  const [participants, setParticipants] = useState<
-    Array<{ name: string; adults: number; kids: number; timestamp: string }>
-  >([])
+  const [participants, setParticipants] = useState<any[]>([])
   const [loadingParticipants, setLoadingParticipants] = useState(false)
   const [formData, setFormData] = useState({
     fullName: "",
@@ -40,6 +39,7 @@ export default function Home() {
     mobile: "",
     adults: "",
     kids: "",
+    zelleConfirmation: "",
   })
 
   const [sparkles, setSparkles] = useState<Array<{ id: number; x: number; y: number; delay: number }>>([])
@@ -66,6 +66,9 @@ export default function Home() {
   const [eventBudget, setEventBudget] = useState(2250) // Default budget
   const [showBudgetConfig, setShowBudgetConfig] = useState(false)
   const [newBudget, setNewBudget] = useState("")
+  const [participantsLoading, setParticipantsLoading] = useState(false)
+  const [participantsError, setParticipantsError] = useState<string | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleGoogleSignIn = () => {
     if (!isSignedIn) {
@@ -269,6 +272,7 @@ export default function Home() {
 
   const handleSubmitRegistration = async (e: React.FormEvent) => {
     e.preventDefault()
+    setIsSubmitting(true)
 
     try {
       const response = await fetch("/api/submit-registration", {
@@ -278,22 +282,40 @@ export default function Home() {
         },
         body: JSON.stringify({
           ...formData,
-          submittedBy: userInfo?.name || "Unknown",
-          signedInViaGoogle: isSignedIn,
+          signedInUser: userInfo?.email || "Not signed in",
           timestamp: new Date().toISOString(),
         }),
       })
 
       if (response.ok) {
-        alert("Registration submitted successfully! You will receive a confirmation email shortly.")
+        const newRegistration = {
+          ...formData,
+          timestamp: new Date().toISOString(),
+        }
+
+        const existingRegistrations = JSON.parse(localStorage.getItem("registrations") || "[]")
+        existingRegistrations.push(newRegistration)
+        localStorage.setItem("registrations", JSON.stringify(existingRegistrations))
+
+        alert("Registration submitted successfully! Thank you for registering.")
         setShowRegistrationForm(false)
-        setFormData({ fullName: "", email: "", address: "", mobile: "", adults: "", kids: "" })
+        setFormData({
+          fullName: "",
+          email: "",
+          address: "",
+          mobile: "",
+          adults: "",
+          kids: "",
+          zelleConfirmation: "",
+        })
       } else {
-        throw new Error("Failed to submit registration")
+        alert("Registration failed. Please try again.")
       }
     } catch (error) {
-      console.error("Registration submission error:", error)
-      alert("There was an error submitting your registration. Please try again or contact us directly.")
+      console.error("Registration error:", error)
+      alert("Registration failed. Please try again.")
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -361,6 +383,32 @@ export default function Home() {
     localStorage.removeItem("googleAccessToken")
     localStorage.removeItem("userInfo")
   }
+
+  const loadParticipants = async () => {
+    try {
+      setParticipantsLoading(true)
+
+      // Load from local storage
+      const storedParticipants = JSON.parse(localStorage.getItem("participants") || "[]")
+      setParticipants(storedParticipants)
+
+      if (storedParticipants.length === 0) {
+        setParticipantsError("No participants registered yet")
+      } else {
+        setParticipantsError(null)
+      }
+    } catch (error) {
+      console.error("Error loading participants:", error)
+      setParticipantsError("Failed to load participants data")
+    } finally {
+      setParticipantsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    const storedParticipants = JSON.parse(localStorage.getItem("participants") || "[]")
+    setParticipants(storedParticipants)
+  }, [])
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-red-50 relative">
@@ -694,8 +742,8 @@ export default function Home() {
               <div className="flex items-center space-x-3 bg-white/80 backdrop-blur-sm px-4 md:px-6 py-3 rounded-full shadow-lg border border-orange-200 w-full md:w-auto justify-center">
                 <MapPin className="w-5 h-5 text-orange-600 flex-shrink-0" />
                 {isSignedIn ? (
-                  <span className="text-gray-800 font-semibold text-sm md:text-base text-center">
-                    1991, Kieva Pls, Allen, TX 75013
+                  <span className="text-gray-800 font-semibold text-sm md:text-base">
+                    1991, Keiva Pl, Allen TX 75013
                   </span>
                 ) : (
                   <button
@@ -737,144 +785,93 @@ export default function Home() {
                 <div className="w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-orange-500 to-red-500 rounded-3xl mx-auto mb-6 md:mb-8 flex items-center justify-center shadow-lg">
                   <Music className="w-8 h-8 md:w-10 md:h-10 text-white" />
                 </div>
-                <h2 className="text-gray-900 text-3xl md:text-4xl font-bold font-serif mb-4">Participation Guide</h2>
-                <p className="text-orange-700 text-base md:text-lg font-medium">Simple steps to join our celebration</p>
+                <h2 className="text-gray-900 text-3xl md:text-4xl font-bold font-serif mb-4">Registration Process</h2>
+                <p className="text-orange-700 text-base md:text-lg font-medium">$75 per family - Two simple steps</p>
               </div>
 
-              <div className="text-center mb-8 md:mb-12">
-                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl p-6 md:p-8 mb-8">
-                  <h3 className="text-gray-900 text-xl md:text-2xl font-bold mb-4">Quick Registration</h3>
-                  <p className="text-gray-600 mb-6">Sign in with Google for faster registration and updates</p>
-                  <Button
-                    className={`${
-                      isSignedIn
-                        ? "bg-green-500 hover:bg-green-600 text-white"
-                        : "bg-white hover:bg-gray-50 text-gray-700 border border-gray-300"
-                    } font-medium px-6 md:px-8 py-3 rounded-full text-base md:text-lg shadow-lg hover:shadow-xl transition-all transform hover:scale-105 flex items-center space-x-3 mx-auto w-full md:w-auto justify-center`}
-                    onClick={handleGoogleSignIn}
-                  >
-                    {isSignedIn ? (
-                      <>
-                        <User className="w-5 h-5" />
-                        <span>Welcome! You're signed in</span>
-                      </>
-                    ) : (
-                      <>
-                        <svg className="w-5 h-5" viewBox="0 0 24 24">
-                          <path
-                            fill="#4285F4"
-                            d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                          />
-                          <path
-                            fill="#34A853"
-                            d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                          />
-                          <path
-                            fill="#FBBC05"
-                            d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45
-1.18 4.93l2.85-2.22.81-.62z"
-                          />
-                          <path
-                            fill="#EA4335"
-                            d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                          />
-                        </svg>
-                        <span>Continue with Google</span>
-                      </>
-                    )}
-                  </Button>
-                  <p className="text-gray-500 text-sm mt-4">Or follow the manual registration process below</p>
-                </div>
-              </div>
-
-              {/* ... existing registration steps with responsive spacing ... */}
-              <div className="space-y-6 md:space-y-8 text-gray-800">
-                <div className="space-y-4 md:space-y-6">
-                  <div className="flex flex-col md:flex-row md:items-start space-y-4 md:space-y-0 md:space-x-6 p-4 md:p-6 rounded-2xl bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 shadow-sm hover:shadow-md transition-shadow">
-                    <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white border-0 px-4 py-2 text-lg font-bold rounded-full self-start md:mt-1">
-                      1
-                    </Badge>
-                    <div className="flex-1">
-                      <p className="font-bold text-lg md:text-xl mb-3 text-gray-900">REGISTRATION: $25 per family</p>
-                      <p className="text-gray-700 leading-relaxed text-base md:text-lg">
-                        Secure your family's participation in all three days of festivities. Registration includes daily
-                        prasadam, cultural program access, and commemorative items for children.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col md:flex-row md:items-start space-y-4 md:space-y-0 md:space-x-6 p-4 md:p-6 rounded-2xl bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 shadow-sm hover:shadow-md transition-shadow">
-                    <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white border-0 px-4 py-2 text-lg font-bold rounded-full self-start md:mt-1">
-                      2
-                    </Badge>
-                    <div className="flex-1">
-                      <p className="text-gray-700 leading-relaxed text-base md:text-lg">
-                        Payment via Zelle: <span className="font-bold text-orange-700">pv.ganesha@gmail.com</span>
-                        <br />
-                        <span className="text-sm text-gray-600">Or cash payment at community office</span>
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col md:flex-row md:items-start space-y-4 md:space-y-0 md:space-x-6 p-4 md:p-6 rounded-2xl bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 shadow-sm hover:shadow-md transition-shadow">
-                    <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white border-0 px-4 py-2 text-lg font-bold rounded-full self-start md:mt-1">
-                      3
-                    </Badge>
-                    <div className="flex-1">
-                      <p className="text-gray-700 leading-relaxed text-base md:text-lg">
-                        Include family member names, contact information, and any special dietary requirements.
-                        Confirmation will be sent within 24 hours.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col md:flex-row md:items-start space-y-4 md:space-y-0 md:space-x-6 p-4 md:p-6 rounded-2xl bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 shadow-sm hover:shadow-md transition-shadow">
-                    <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white border-0 px-4 py-2 text-lg font-bold rounded-full self-start md:mt-1">
-                      4
-                    </Badge>
-                    <div className="flex-1">
-                      <p className="text-gray-700 leading-relaxed text-base md:text-lg">
-                        Volunteer opportunities available! Sign up for decoration, prasadam preparation, or event
-                        coordination to earn community service hours.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="border-t border-orange-200 pt-8 md:pt-10">
+              {isSignedIn ? (
+                <div className="space-y-6 md:space-y-8 text-gray-800">
                   <div className="space-y-4 md:space-y-6">
-                    <div className="flex flex-col md:flex-row md:items-start space-y-4 md:space-y-0 md:space-x-6 p-4 md:p-6 rounded-2xl bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-200 shadow-sm">
-                      <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0 px-4 py-2 text-lg font-bold rounded-full self-start md:mt-1">
-                        Final
+                    <div className="flex flex-col md:flex-row md:items-start space-y-4 md:space-y-0 md:space-x-6 p-4 md:p-6 rounded-2xl bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 shadow-sm hover:shadow-md transition-shadow">
+                      <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white border-0 px-4 py-2 text-lg font-bold rounded-full self-start md:mt-1">
+                        1
                       </Badge>
                       <div className="flex-1">
-                        <p className="text-gray-700 leading-relaxed text-base md:text-lg">
-                          Receive your digital invitation with daily schedules, parking information, and special
-                          instructions for cultural performances and aarti timings.
+                        <p className="font-bold text-lg md:text-xl mb-3 text-gray-900">PAYMENT: $75 per family</p>
+                        <p className="text-gray-700 leading-relaxed text-base md:text-lg mb-4">
+                          Send payment via Zelle to:{" "}
+                          <span className="font-bold text-orange-700">pecanmeadowevents@gmail.com</span>
                         </p>
+
+                        <div className="bg-white rounded-xl p-4 border border-gray-200 inline-block">
+                          <div className="text-center mb-3">
+                            <p className="font-semibold text-gray-800 mb-2">pecanmeadowevents@gmail.com</p>
+                          </div>
+                          <img
+                            src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/PHOTO-2025-08-14-21-26-03.jpg-3gWNlKI6x7XdHRYPu3RJJ7B12eqADk.jpeg"
+                            alt="Zelle QR Code for pecanmeadowevents@gmail.com"
+                            className="w-48 h-48 mx-auto"
+                          />
+                          <div className="mt-3 text-center">
+                            <img src="/zelle-logo-purple.png" alt="Zelle" className="h-8 mx-auto" />
+                          </div>
+                        </div>
                       </div>
                     </div>
 
-                    <div className="flex flex-col md:flex-row md:items-start space-y-4 md:space-y-0 md:space-x-6 p-4 md:p-6 rounded-2xl bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-200 shadow-sm">
-                      <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0 px-4 py-2 text-lg font-bold rounded-full self-start md:mt-1">
-                        Bonus
+                    <div className="flex flex-col md:flex-row md:items-start space-y-4 md:space-y-0 md:space-x-6 p-4 md:p-6 rounded-2xl bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 shadow-sm hover:shadow-md transition-shadow">
+                      <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white border-0 px-4 py-2 text-lg font-bold rounded-full self-start md:mt-1">
+                        2
                       </Badge>
                       <div className="flex-1">
-                        <p className="text-gray-700 leading-relaxed text-base md:text-lg">
-                          Join our WhatsApp community group for real-time updates, photo sharing, and coordination with
-                          other families throughout the celebration.
+                        <p className="font-bold text-lg md:text-xl mb-3 text-gray-900">REGISTRATION</p>
+                        <p className="text-gray-700 leading-relaxed text-base md:text-lg mb-4">
+                          Complete the registration form with your family details and Zelle confirmation number.
                         </p>
+                        <Button
+                          onClick={() => setShowRegistrationForm(true)}
+                          className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-bold px-6 py-3 rounded-full shadow-lg hover:shadow-xl transition-all transform hover:scale-105"
+                        >
+                          Start Registration
+                        </Button>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
-
-              <div className="text-center mt-8 md:mt-12">
-                <Button className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-bold px-8 md:px-12 py-4 rounded-full text-lg md:text-xl shadow-lg hover:shadow-xl transition-all transform hover:scale-105 w-full md:w-auto">
-                  Register Your Family
-                </Button>
-              </div>
+              ) : (
+                <div className="text-center">
+                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl p-6 md:p-8 mb-8">
+                    <h3 className="text-gray-900 text-xl md:text-2xl font-bold mb-4">Sign In Required</h3>
+                    <p className="text-gray-600 mb-6">
+                      Please sign in with Google to access registration and payment information
+                    </p>
+                    <Button
+                      className="bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 font-medium px-6 md:px-8 py-3 rounded-full text-base md:text-lg shadow-lg hover:shadow-xl transition-all transform hover:scale-105 flex items-center space-x-3 mx-auto w-full md:w-auto justify-center"
+                      onClick={handleGoogleSignIn}
+                    >
+                      <svg className="w-5 h-5" viewBox="0 0 24 24">
+                        <path
+                          fill="#4285F4"
+                          d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                        />
+                        <path
+                          fill="#34A853"
+                          d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                        />
+                        <path
+                          fill="#FBBC05"
+                          d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                        />
+                        <path
+                          fill="#EA4335"
+                          d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                        />
+                      </svg>
+                      <span>Continue with Google</span>
+                    </Button>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -1060,72 +1057,84 @@ export default function Home() {
 
       {/* Participants Modal */}
       {showParticipants && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <Card className="bg-white w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-3xl shadow-2xl">
-            <CardContent className="p-8">
-              <div className="text-center mb-8">
-                <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-red-500 rounded-2xl mx-auto mb-4 flex items-center justify-center">
-                  <Users className="w-8 h-8 text-white" />
-                </div>
-                <h2 className="text-gray-900 text-3xl font-bold font-serif mb-2">Registered Participants</h2>
-                <p className="text-gray-600">Families registered for Ganesh Chaturthi 2025</p>
-              </div>
-
-              {loadingParticipants ? (
-                <div className="text-center py-12">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
-                  <p className="text-gray-600">Loading participants...</p>
-                </div>
-              ) : participants.length > 0 ? (
-                <div className="space-y-4 mb-8">
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {participants.map((participant, index) => (
-                      <div
-                        key={index}
-                        className="bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 rounded-xl p-4"
-                      >
-                        <h3 className="font-bold text-gray-900 text-lg mb-2">{participant.name}</h3>
-                        <div className="text-gray-600 text-sm space-y-1">
-                          <p className="flex items-center space-x-2">
-                            <Users className="w-4 h-4" />
-                            <span>
-                              {participant.adults} Adults, {participant.kids} Kids
-                            </span>
-                          </p>
-                          <p className="flex items-center space-x-2">
-                            <Calendar className="w-4 h-4" />
-                            <span>Registered: {new Date(participant.timestamp).toLocaleDateString()}</span>
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="text-center pt-6 border-t border-orange-200">
-                    <p className="text-gray-600 text-lg">
-                      <strong>{participants.length}</strong> families registered
-                    </p>
-                    <p className="text-gray-500 text-sm mt-2">
-                      Total: {participants.reduce((sum, p) => sum + p.adults + p.kids, 0)} participants
-                    </p>
-                  </div>
-                </div>
-              ) : (
-                <div className="text-center py-12">
-                  <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                  <p className="text-gray-600 text-lg">No participants registered yet</p>
-                  <p className="text-gray-500 text-sm">Be the first to register for the celebration!</p>
-                </div>
-              )}
-
-              <div className="text-center">
-                <Button
-                  onClick={() => setShowParticipants(false)}
-                  className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-semibold px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all"
-                >
-                  Close
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <Card className="bg-white w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-3xl shadow-2xl mx-4">
+            <CardContent className="p-6 md:p-8">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-gray-900 text-2xl md:text-3xl font-bold font-serif">Event Participants</h2>
+                <Button onClick={() => setShowParticipants(false)} variant="outline" size="sm" className="rounded-full">
+                  <X className="w-4 h-4" />
                 </Button>
               </div>
+
+              {participantsLoading ? (
+                <div className="text-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto mb-4"></div>
+                  <p className="text-gray-600">Loading participants...</p>
+                </div>
+              ) : participantsError ? (
+                <div className="text-center py-8">
+                  <p className="text-red-600 mb-4">{participantsError}</p>
+                  <Button onClick={loadParticipants} className="bg-orange-500 hover:bg-orange-600">
+                    Try Again
+                  </Button>
+                </div>
+              ) : (
+                <div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                    <Card className="bg-gradient-to-br from-orange-50 to-red-50 border-orange-200">
+                      <CardContent className="p-4 text-center">
+                        <Users className="w-8 h-8 text-orange-600 mx-auto mb-2" />
+                        <p className="text-2xl font-bold text-orange-800">{participants.length}</p>
+                        <p className="text-orange-600 text-sm">Total Families</p>
+                      </CardContent>
+                    </Card>
+
+                    <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
+                      <CardContent className="p-4 text-center">
+                        <User className="w-8 h-8 text-blue-600 mx-auto mb-2" />
+                        <p className="text-2xl font-bold text-blue-800">
+                          {participants.reduce((sum, p) => sum + (p.adults || 0), 0)}
+                        </p>
+                        <p className="text-blue-600 text-sm">Total Adults</p>
+                      </CardContent>
+                    </Card>
+
+                    <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
+                      <CardContent className="p-4 text-center">
+                        <Baby className="w-8 h-8 text-green-600 mx-auto mb-2" />
+                        <p className="text-2xl font-bold text-green-800">
+                          {participants.reduce((sum, p) => sum + (p.kids || 0), 0)}
+                        </p>
+                        <p className="text-green-600 text-sm">Total Kids</p>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  <div className="space-y-3">
+                    <h3 className="text-lg font-semibold text-gray-800 mb-4">Registered Families</h3>
+                    {participants.map((participant, index) => (
+                      <Card key={index} className="border border-gray-200 hover:shadow-md transition-shadow">
+                        <CardContent className="p-4">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <h4 className="font-semibold text-gray-900">{participant.name}</h4>
+                              <p className="text-gray-600 text-sm">{participant.email}</p>
+                              <div className="flex gap-4 mt-2 text-sm text-gray-500">
+                                <span>Adults: {participant.adults || 0}</span>
+                                <span>Kids: {participant.kids || 0}</span>
+                              </div>
+                            </div>
+                            <div className="text-right text-xs text-gray-400">
+                              {new Date(participant.timestamp).toLocaleDateString()}
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -1142,7 +1151,7 @@ export default function Home() {
                 </div>
                 <h2 className="text-gray-900 text-2xl md:text-3xl font-bold font-serif mb-2">Event Registration</h2>
                 <p className="text-gray-600 text-sm md:text-base">
-                  Please fill in your details to register for Ganesh Chaturthi 2025
+                  Please fill in your details to complete registration
                 </p>
               </div>
 
@@ -1246,11 +1255,31 @@ export default function Home() {
                   </div>
                 </div>
 
+                <div>
+                  <label
+                    htmlFor="zelleConfirmation"
+                    className="block text-gray-700 font-semibold mb-2 text-sm md:text-base"
+                  >
+                    Last 4 Characters of Zelle Confirmation Number *
+                  </label>
+                  <input
+                    type="text"
+                    id="zelleConfirmation"
+                    name="zelleConfirmation"
+                    value={formData.zelleConfirmation || ""}
+                    onChange={handleInputChange}
+                    required
+                    maxLength={4}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors text-sm md:text-base"
+                    placeholder="Enter last 4 characters"
+                  />
+                </div>
+
                 <div className="bg-orange-50 border border-orange-200 rounded-xl p-4">
                   <p className="text-orange-800 text-xs md:text-sm">
-                    <strong>Registration Fee:</strong> $25 per family
+                    <strong>Registration Fee:</strong> $75 per family
                     <br />
-                    <strong>Payment:</strong> Zelle to pv.ganesha@gmail.com or cash at community office
+                    <strong>Payment:</strong> Zelle to pecanmeadowevents@gmail.com
                   </p>
                 </div>
 
@@ -1265,9 +1294,10 @@ export default function Home() {
                   </Button>
                   <Button
                     type="submit"
-                    className="flex-1 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-semibold py-3 rounded-xl shadow-lg hover:shadow-xl transition-all"
+                    disabled={isSubmitting}
+                    className={`flex-1 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-semibold py-3 rounded-xl shadow-lg hover:shadow-xl transition-all ${isSubmitting ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
                   >
-                    Submit Registration
+                    {isSubmitting ? "Submitting..." : "Submit Registration"}
                   </Button>
                 </div>
               </form>

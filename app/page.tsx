@@ -555,26 +555,46 @@ export default function Home() {
   const handleVolunteerSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     console.log("[v0] Volunteer form submitted:", volunteerForm)
+    console.log("[v0] Current timestamp:", new Date().toISOString())
+    console.log("[v0] User info:", userInfo)
 
     try {
       console.log("[v0] Sending volunteer data to API...")
+      console.log("[v0] API URL:", "/api/submit-volunteer")
+      console.log("[v0] Request method: POST")
+
+      const requestData = {
+        ...volunteerForm,
+        timestamp: new Date().toISOString(),
+        userEmail: userInfo?.email || "anonymous",
+      }
+      console.log("[v0] Request data:", requestData)
+
       const response = await fetch("/api/submit-volunteer", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          ...volunteerForm,
-          timestamp: new Date().toISOString(),
-          userEmail: userInfo?.email || "anonymous",
-        }),
+        body: JSON.stringify(requestData),
       })
 
       console.log("[v0] Volunteer API response status:", response.status)
+      console.log("[v0] Volunteer API response headers:", Object.fromEntries(response.headers.entries()))
+
       const responseData = await response.text()
-      console.log("[v0] Volunteer API response:", responseData)
+      console.log("[v0] Volunteer API raw response:", responseData)
+
+      let parsedResponse
+      try {
+        parsedResponse = JSON.parse(responseData)
+        console.log("[v0] Volunteer API parsed response:", parsedResponse)
+      } catch (parseError) {
+        console.error("[v0] Failed to parse API response:", parseError)
+        console.log("[v0] Raw response was:", responseData)
+      }
 
       if (response.ok) {
+        console.log("[v0] Volunteer submission successful!")
         alert("Thank you for volunteering! We will contact you with more details.")
         setVolunteerForm({
           name: "",
@@ -586,10 +606,16 @@ export default function Home() {
         setShowVolunteerModal(false)
       } else {
         console.error("[v0] Volunteer submission failed with status:", response.status)
+        console.error("[v0] Error response:", responseData)
         alert("Failed to submit volunteer registration. Please try again.")
       }
     } catch (error) {
       console.error("[v0] Error submitting volunteer form:", error)
+      console.error("[v0] Error details:", {
+        name: error.name,
+        message: error.message,
+        stack: error.stack,
+      })
       alert("Failed to submit volunteer registration. Please try again.")
     }
   }

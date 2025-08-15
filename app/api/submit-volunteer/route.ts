@@ -1,69 +1,58 @@
 import { type NextRequest, NextResponse } from "next/server"
 
 export async function POST(request: NextRequest) {
-  console.log("[v0] VOLUNTEER API CALLED - Route is working!")
-  console.log("[v0] Request URL:", request.url)
-  console.log("[v0] Request method:", request.method)
+  console.log("[v0] VOLUNTEER API CALLED - Starting volunteer submission")
 
   try {
     const body = await request.json()
-    console.log("[v0] Volunteer submission received:", body)
+    console.log("[v0] Volunteer data received:", body)
 
     const googleSheetsUrl =
       "https://script.google.com/macros/s/AKfycbwxWQxMNhBs5mLBCq5dvDqEh21iVEsZ9l8HWjnufKcvQ_PiyzWfEq9rBAqs_YM199eP3g/exec"
 
-    console.log("[v0] Sending volunteer data to Google Apps Script:", {
-      url: googleSheetsUrl,
-      action: "addVolunteer",
-      data: body,
-    })
+    const formData = new FormData()
+    formData.append("action", "addVolunteer")
+    formData.append("name", body.name || "")
+    formData.append("email", body.email || "")
+    formData.append("phone", body.phone || "")
+    formData.append("volunteerType", body.volunteerType || "")
+    formData.append("cleanupDate", body.cleanupDate || "")
+    formData.append("timestamp", new Date().toISOString())
+
+    console.log("[v0] Sending to Google Apps Script with FormData")
 
     const response = await fetch(googleSheetsUrl, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        action: "addVolunteer",
-        ...body,
-      }),
+      body: formData,
     })
 
-    console.log("[v0] Google Sheets response status:", response.status)
-    console.log("[v0] Google Sheets response headers:", Object.fromEntries(response.headers.entries()))
+    console.log("[v0] Google Apps Script response status:", response.status)
 
-    const responseText = await response.text()
-    console.log("[v0] Google Sheets raw response:", responseText)
-
-    if (!response.ok) {
-      console.error("[v0] Google Sheets API error - Status:", response.status, "Response:", responseText)
-      throw new Error(`Google Sheets API error: ${response.status} - ${responseText}`)
-    }
-
-    let result
-    try {
-      result = JSON.parse(responseText)
-      console.log("[v0] Google Sheets parsed response:", result)
-    } catch (parseError) {
-      console.error("[v0] Failed to parse Google Sheets response as JSON:", parseError)
-      console.log("[v0] Response was:", responseText)
-      throw new Error("Invalid JSON response from Google Apps Script")
-    }
-
-    if (result.success) {
-      console.log("[v0] Volunteer successfully added to Google Sheets")
+    if (response.ok) {
+      console.log("[v0] Volunteer successfully submitted to Google Sheets")
+      return NextResponse.json({
+        success: true,
+        message: "Volunteer registration submitted successfully",
+      })
     } else {
-      console.error("[v0] Google Apps Script returned failure:", result)
+      console.error("[v0] Google Apps Script error:", response.status)
+      throw new Error(`Google Apps Script error: ${response.status}`)
     }
-
-    return NextResponse.json({ success: true, message: "Volunteer registration submitted successfully" })
   } catch (error) {
-    console.error("[v0] Error submitting volunteer registration:", error)
-    return NextResponse.json({ success: false, error: "Failed to submit volunteer registration" }, { status: 500 })
+    console.error("[v0] Volunteer submission error:", error)
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Failed to submit volunteer registration",
+      },
+      { status: 500 },
+    )
   }
 }
 
 export async function GET() {
-  console.log("[v0] Volunteer API GET called - Route exists and is working")
-  return NextResponse.json({ message: "Volunteer API is working", timestamp: new Date().toISOString() })
+  return NextResponse.json({
+    message: "Volunteer API is working",
+    timestamp: new Date().toISOString(),
+  })
 }

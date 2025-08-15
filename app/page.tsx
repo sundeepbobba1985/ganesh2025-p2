@@ -22,6 +22,7 @@ import {
   X,
   Settings,
   ExternalLink,
+  Users,
 } from "lucide-react"
 
 export default function Home() {
@@ -29,7 +30,7 @@ export default function Home() {
   const [userInfo, setUserInfo] = useState<{ name: string; email: string } | null>(null)
   const [showRegistrationForm, setShowRegistrationForm] = useState(false)
   const [showParticipants, setShowParticipants] = useState(false)
-  const [participants, setParticipants] = useState<any[]>([])
+  const [participants, setParticipants] = useState([])
   const [loadingParticipants, setLoadingParticipants] = useState(false)
   const [formData, setFormData] = useState({
     fullName: "",
@@ -84,6 +85,12 @@ export default function Home() {
   const [galleryImages, setGalleryImages] = useState<any[]>([])
   const [showAddImages, setShowAddImages] = useState(false)
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
+  const [activeSection, setActiveSection] = useState<string | null>(null)
+  const [dashboardStats, setDashboardStats] = useState({
+    totalFamilies: 0,
+    totalAdults: 0,
+    totalKids: 0,
+  })
 
   const handleGallerySection = () => {
     setShowGallery(true)
@@ -531,6 +538,40 @@ export default function Home() {
     setShowVolunteerModal(true)
   }
 
+  const loadParticipants = async () => {
+    try {
+      const response = await fetch("/api/get-participants")
+      const data = await response.json()
+
+      if (data.success) {
+        setParticipants(data.participants)
+        // Calculate dashboard stats
+        const stats = data.participants.reduce(
+          (acc, participant) => {
+            acc.totalFamilies += 1
+            acc.totalAdults += Number.parseInt(participant.adults) || 0
+            acc.totalKids += Number.parseInt(participant.kids) || 0
+            return acc
+          },
+          { totalFamilies: 0, totalAdults: 0, totalKids: 0 },
+        )
+
+        setDashboardStats(stats)
+      }
+    } catch (error) {
+      console.error("Failed to load participants:", error)
+    }
+  }
+
+  const handleParticipantsSection = () => {
+    if (!isSignedIn) {
+      alert("Please sign in with Google to view participants.")
+      return
+    }
+    loadParticipants()
+    setActiveSection("Participants")
+  }
+
   // const loadParticipants = async () => {
   //   setLoadingParticipants(true)
   //   try {
@@ -695,6 +736,14 @@ export default function Home() {
                   <span className="text-sm font-medium">Gallery</span>
                 </button>
                 <button
+                  onClick={handleParticipantsSection}
+                  className="flex items-center space-x-2 text-gray-700 hover:text-orange-600 transition-colors"
+                >
+                  <Users className="w-4 h-4" />
+                  <span className="text-sm font-medium">Participants</span>
+                  {!isSignedIn && <Lock className="w-3 h-3 text-gray-400" />}
+                </button>
+                <button
                   onClick={() => handleProtectedSection("Financials")}
                   className="flex items-center space-x-2 text-gray-700 hover:text-orange-600 transition-colors"
                 >
@@ -808,6 +857,17 @@ export default function Home() {
                 </button>
                 <button
                   onClick={() => {
+                    handleParticipantsSection()
+                    setIsMobileMenuOpen(false)
+                  }}
+                  className="flex items-center space-x-3 text-gray-700 hover:text-orange-600 transition-colors py-2 text-left"
+                >
+                  <Users className="w-5 h-5" />
+                  <span className="font-medium">Participants</span>
+                  {!isSignedIn && <Lock className="w-4 h-4 text-gray-400" />}
+                </button>
+                <button
+                  onClick={() => {
                     handleProtectedSection("Financials")
                     setIsMobileMenuOpen(false)
                   }}
@@ -916,6 +976,42 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* Dashboard Stats */}
+      <div className="py-16 bg-gradient-to-br from-orange-50 to-red-50">
+        <div className="max-w-6xl mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">Event Dashboard</h2>
+            <p className="text-gray-600">Live registration statistics</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="bg-white rounded-2xl p-8 shadow-lg text-center">
+              <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl mx-auto mb-4 flex items-center justify-center">
+                <Users className="w-8 h-8 text-white" />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">{dashboardStats.totalFamilies}</h3>
+              <p className="text-gray-600">Registered Families</p>
+            </div>
+
+            <div className="bg-white rounded-2xl p-8 shadow-lg text-center">
+              <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl mx-auto mb-4 flex items-center justify-center">
+                <User className="w-8 h-8 text-white" />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">{dashboardStats.totalAdults}</h3>
+              <p className="text-gray-600">Total Adults</p>
+            </div>
+
+            <div className="bg-white rounded-2xl p-8 shadow-lg text-center">
+              <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl mx-auto mb-4 flex items-center justify-center">
+                <Heart className="w-8 h-8 text-white" />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">{dashboardStats.totalKids}</h3>
+              <p className="text-gray-600">Total Kids</p>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Registration Process Card */}
       <section id="registration" className="container mx-auto px-4 py-12 md:py-16 relative z-10">
@@ -1824,6 +1920,65 @@ export default function Home() {
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {activeSection === "Participants" && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+            <div className="p-6 border-b border-gray-200 flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-gray-900">Registered Participants</h2>
+              <button
+                onClick={() => setActiveSection(null)}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+              {participants.length === 0 ? (
+                <div className="text-center py-12">
+                  <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                  <p className="text-gray-500 text-lg">No participants registered yet</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                    <div className="bg-blue-50 rounded-lg p-4 text-center">
+                      <h3 className="text-2xl font-bold text-blue-600">{dashboardStats.totalFamilies}</h3>
+                      <p className="text-blue-800">Total Families</p>
+                    </div>
+                    <div className="bg-green-50 rounded-lg p-4 text-center">
+                      <h3 className="text-2xl font-bold text-green-600">{dashboardStats.totalAdults}</h3>
+                      <p className="text-green-800">Total Adults</p>
+                    </div>
+                    <div className="bg-purple-50 rounded-lg p-4 text-center">
+                      <h3 className="text-2xl font-bold text-purple-600">{dashboardStats.totalKids}</h3>
+                      <p className="text-purple-800">Total Kids</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Registered Families</h3>
+                    {participants.map((participant, index) => (
+                      <div key={index} className="bg-gray-50 rounded-lg p-4 flex items-center justify-between">
+                        <div>
+                          <h4 className="font-medium text-gray-900">{participant.name}</h4>
+                          <p className="text-sm text-gray-600">
+                            Adults: {participant.adults} | Kids: {participant.kids}
+                          </p>
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          {new Date(participant.timestamp).toLocaleDateString()}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

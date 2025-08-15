@@ -70,7 +70,9 @@ export async function GET(request: NextRequest) {
 
     const clientId = process.env.GOOGLE_CLIENT_ID
     const clientSecret = process.env.GOOGLE_CLIENT_SECRET
-    const redirectUri = `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/api/auth/google`
+
+    const url = new URL(request.url)
+    const redirectUri = `${url.protocol}//${url.host}/api/auth/google`
 
     if (!clientId || !clientSecret) {
       return NextResponse.redirect(new URL("/?error=config_error", request.url))

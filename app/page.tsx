@@ -554,8 +554,10 @@ export default function Home() {
 
   const handleVolunteerSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    console.log("[v0] Volunteer form submitted:", volunteerForm)
 
     try {
+      console.log("[v0] Sending volunteer data to API...")
       const response = await fetch("/api/submit-volunteer", {
         method: "POST",
         headers: {
@@ -568,6 +570,10 @@ export default function Home() {
         }),
       })
 
+      console.log("[v0] Volunteer API response status:", response.status)
+      const responseData = await response.text()
+      console.log("[v0] Volunteer API response:", responseData)
+
       if (response.ok) {
         alert("Thank you for volunteering! We will contact you with more details.")
         setVolunteerForm({
@@ -579,10 +585,11 @@ export default function Home() {
         })
         setShowVolunteerModal(false)
       } else {
+        console.error("[v0] Volunteer submission failed with status:", response.status)
         alert("Failed to submit volunteer registration. Please try again.")
       }
     } catch (error) {
-      console.error("Error submitting volunteer form:", error)
+      console.error("[v0] Error submitting volunteer form:", error)
       alert("Failed to submit volunteer registration. Please try again.")
     }
   }

@@ -92,6 +92,34 @@ export default function Home() {
     totalKids: 0,
   })
 
+  useEffect(() => {
+    loadDashboardStats()
+  }, [])
+
+  const loadDashboardStats = async () => {
+    try {
+      console.log("[v0] Loading dashboard stats from Google Sheets...")
+      const response = await fetch("/api/get-participants")
+      const data = await response.json()
+
+      if (data.success && data.participants) {
+        const stats = data.participants.reduce(
+          (acc: any, participant: any) => {
+            acc.totalFamilies += 1
+            acc.totalAdults += Number.parseInt(participant.adults) || 0
+            acc.totalKids += Number.parseInt(participant.kids) || 0
+            return acc
+          },
+          { totalFamilies: 0, totalAdults: 0, totalKids: 0 },
+        )
+        setDashboardStats(stats)
+        console.log("[v0] Dashboard stats loaded:", stats)
+      }
+    } catch (error) {
+      console.error("[v0] Error loading dashboard stats:", error)
+    }
+  }
+
   const handleGallerySection = () => {
     setShowGallery(true)
   }
@@ -313,19 +341,7 @@ export default function Home() {
     }
     if (sectionName === "Participants") {
       setShowParticipants(true)
-      setLoadingParticipants(true)
-
-      try {
-        const storedRegistrations = localStorage.getItem("registrations")
-        if (storedRegistrations) {
-          const registrations = JSON.parse(storedRegistrations)
-          setParticipants(registrations)
-        }
-      } catch (error) {
-        console.error("Error loading participants from localStorage:", error)
-      }
-
-      setLoadingParticipants(false)
+      await loadParticipants()
       return
     }
     if (sectionName === "Financials") {
@@ -447,15 +463,6 @@ export default function Home() {
       })
 
       if (response.ok) {
-        const newRegistration = {
-          ...formData,
-          timestamp: new Date().toISOString(),
-        }
-
-        const existingRegistrations = JSON.parse(localStorage.getItem("registrations") || "[]")
-        existingRegistrations.push(newRegistration)
-        localStorage.setItem("registrations", JSON.stringify(existingRegistrations))
-
         alert("Registration submitted successfully! Thank you for registering.")
         setShowRegistrationForm(false)
         setFormData({
@@ -467,6 +474,8 @@ export default function Home() {
           kids: "",
           zelleConfirmation: "",
         })
+        // Reload dashboard stats after successful registration
+        loadDashboardStats()
       } else {
         alert("Registration failed. Please try again.")
       }

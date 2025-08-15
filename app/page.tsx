@@ -98,8 +98,8 @@ export default function Home() {
 
   const loadDashboardStats = async () => {
     try {
-      console.log("[v0] Loading dashboard stats from Google Sheets...")
-      const response = await fetch("/api/get-participants")
+      console.log("[v0] Loading dashboard stats from JSON file...")
+      const response = await fetch("/api/participants")
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
@@ -108,19 +108,9 @@ export default function Home() {
       const data = await response.json()
       console.log("[v0] Participants data received:", data)
 
-      if (data.success && data.participants) {
-        const stats = data.participants.reduce(
-          (acc: any, participant: any) => {
-            acc.totalFamilies += 1
-            acc.totalAdults += Number.parseInt(participant.adults) || 0
-            acc.totalKids += Number.parseInt(participant.kids) || 0
-            return acc
-          },
-          { totalFamilies: 0, totalAdults: 0, totalKids: 0 },
-        )
-
-        setDashboardStats(stats)
-        console.log("[v0] Dashboard stats loaded from Google Sheets:", stats)
+      if (data.success && data.stats) {
+        setDashboardStats(data.stats)
+        console.log("[v0] Dashboard stats loaded from JSON file:", data.stats)
       } else {
         console.log("[v0] No participants data received")
         setDashboardStats({ totalFamilies: 0, totalAdults: 0, totalKids: 0 })
@@ -451,19 +441,8 @@ export default function Home() {
         timestamp: new Date().toISOString(),
       }
 
-      // Store in localStorage immediately
-      const existingRegistrations = JSON.parse(localStorage.getItem("registrations") || "[]")
-      existingRegistrations.push({
-        name: registrationData.fullName,
-        email: registrationData.email,
-        adults: registrationData.adults,
-        kids: registrationData.kids,
-        timestamp: registrationData.timestamp,
-      })
-      localStorage.setItem("registrations", JSON.stringify(existingRegistrations))
-
-      // Submit to Google Sheets
-      const response = await fetch("/api/submit-registration", {
+      // Save to JSON file (primary storage)
+      const jsonResponse = await fetch("/api/participants", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -471,9 +450,26 @@ export default function Home() {
         body: JSON.stringify(registrationData),
       })
 
-      const result = await response.json()
+      const jsonResult = await jsonResponse.json()
 
-      if (result.success) {
+      if (jsonResult.success) {
+        // Also submit to Google Sheets as backup
+        try {
+          await fetch("/api/submit-registration", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(registrationData),
+          })
+          console.log("[v0] Registration also saved to Google Sheets as backup")
+        } catch (backupError) {
+          console.warn("[v0] Google Sheets backup failed, but JSON storage succeeded:", backupError)
+        }
+
+        // Refresh dashboard stats
+        await loadDashboardStats()
+
         const handleRegistrationSuccess = () => {
           setShowRegistrationForm(false)
           setFormData({
@@ -612,10 +608,12 @@ export default function Home() {
   }
 
   const loadParticipants = async () => {
+    if (loadingParticipants) return
+
     setLoadingParticipants(true)
     try {
-      console.log("[v0] Loading participants from Google Sheets...")
-      const response = await fetch("/api/get-participants")
+      console.log("[v0] Loading participants from JSON file...")
+      const response = await fetch("/api/participants")
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
@@ -626,13 +624,13 @@ export default function Home() {
 
       if (data.success && data.participants) {
         setParticipants(data.participants)
-        console.log("[v0] Participants loaded from Google Sheets:", data.participants)
+        console.log("[v0] Participants loaded from JSON file:", data.participants)
       } else {
-        console.log("[v0] No participants found in Google Sheets")
+        console.log("[v0] No participants found in JSON file")
         setParticipants([])
       }
     } catch (error) {
-      console.error("[v0] Error loading participants from Google Sheets:", error)
+      console.error("[v0] Error loading participants from JSON file:", error)
       setParticipants([])
     } finally {
       setLoadingParticipants(false)

@@ -1303,10 +1303,7 @@ export default function Home() {
           <Card className="bg-white w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl shadow-2xl mx-4">
             <CardContent className="p-6 md:p-8">
               <div className="text-center mb-6 md:mb-8">
-                <div
-                  className="w-12 h-12 md:w-16 md:h-16 bg-gradient-to-br from-orange-500 to-red-500 rounded-2xl mx-auto mb-4 flex items-center
-justify-center"
-                >
+                <div className="w-12 h-12 md:w-16 md:h-16 bg-gradient-to-br from-orange-500 to-red-500 rounded-2xl mx-auto mb-4 flex items-center justify-center">
                   <User className="w-6 h-6 md:w-8 md:h-8 text-white" />
                 </div>
                 <h2 className="text-gray-900 text-2xl md:text-3xl font-bold font-serif mb-2">Event Registration</h2>

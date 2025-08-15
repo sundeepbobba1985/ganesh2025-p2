@@ -42,7 +42,7 @@ function doPost(e) {
 
 function handleRegistration(params) {
   try {
-    const sheet = getOrCreateSheet("Registration")
+    const sheet = getOrCreateSheet("Registrations")
 
     // Add headers if sheet is empty
     if (sheet.getLastRow() === 0) {
@@ -84,7 +84,7 @@ function handleRegistration(params) {
 
 function handleGetRegistrations() {
   try {
-    const sheet = getOrCreateSheet("Registration")
+    const sheet = getOrCreateSheet("Registrations")
 
     if (sheet.getLastRow() <= 1) {
       return ContentService.createTextOutput(

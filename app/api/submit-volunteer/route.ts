@@ -6,8 +6,7 @@ export async function POST(request: NextRequest) {
     console.log("[v0] Volunteer submission received:", body)
 
     const googleSheetsUrl =
-      process.env.GOOGLE_SHEETS_URL ||
-      "https://script.google.com/macros/s/AKfycbxVEpIMwrfKlyveAdvYuJ1U-o8WiAG3KC2of8pjL9gNq7KaHY68aksEnsoL8D9fXnLjLA/exec"
+      "https://script.google.com/macros/s/AKfycbwxWQxMNhBs5mLBCq5dvDqEh21iVEsZ9l8HWjnufKcvQ_PiyzWfEq9rBAqs_YM199eP3g/exec"
 
     const response = await fetch(googleSheetsUrl, {
       method: "POST",

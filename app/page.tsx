@@ -982,8 +982,9 @@ export default function Home() {
                   What is included in the registration fee?
                 </h3>
                 <p className="text-gray-700 leading-relaxed text-base md:text-lg">
-                  The $25 family registration includes daily prasadam for all three days, access to all cultural
-                  programs, commemorative items for children, and participation in all rituals and ceremonies.
+                  The $75 family registration covers idol, decorations, pooja items, priest fees, potluck utensils,
+                  fruits & flowers, access to cultural programs, commemorative items for children, and participation in
+                  all rituals and ceremonies.
                 </p>
               </CardContent>
             </Card>
@@ -1013,16 +1014,6 @@ export default function Home() {
                 <p className="text-gray-700 leading-relaxed text-base md:text-lg">
                   We welcome volunteers for decoration, prasadam preparation, event coordination, and cleanup. Volunteer
                   hours can count towards community service requirements.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-white/90 backdrop-blur-sm border border-orange-200 shadow-lg rounded-2xl">
-              <CardContent className="p-6 md:p-8">
-                <h3 className="text-gray-900 text-lg md:text-xl font-bold mb-4">Is parking available at the venue?</h3>
-                <p className="text-gray-700 leading-relaxed text-base md:text-lg">
-                  Yes, free parking is available at the venue. Additional overflow parking will be available at nearby
-                  locations with shuttle service during peak hours.
                 </p>
               </CardContent>
             </Card>

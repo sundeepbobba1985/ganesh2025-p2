@@ -388,8 +388,7 @@ export default function Home() {
     try {
       setParticipantsLoading(true)
 
-      // Load from local storage
-      const storedParticipants = JSON.parse(localStorage.getItem("participants") || "[]")
+      const storedParticipants = JSON.parse(localStorage.getItem("registrations") || "[]")
       setParticipants(storedParticipants)
 
       if (storedParticipants.length === 0) {
@@ -406,7 +405,7 @@ export default function Home() {
   }
 
   useEffect(() => {
-    const storedParticipants = JSON.parse(localStorage.getItem("participants") || "[]")
+    const storedParticipants = JSON.parse(localStorage.getItem("registrations") || "[]")
     setParticipants(storedParticipants)
   }, [])
 

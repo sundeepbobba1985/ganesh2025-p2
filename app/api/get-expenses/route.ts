@@ -4,7 +4,7 @@ export async function GET() {
   try {
     const googleSheetsUrl =
       process.env.GOOGLE_SHEETS_URL ||
-      "https://script.google.com/macros/s/AKfycbwxWQxMNhBs5mLBCq5dvDqEh21iVEsZ9l8HWjnufKcvQ_PiyzWfEq9rBAqs_YM199eP3g/exec"
+      "https://script.google.com/macros/s/AKfycbzhxDSSVgCEW0I7q9Ui7-w_z2_POP6SVaXqM6PGbWPbS3XgDUmjJLTal0jLZzBQwl6G/exec"
 
     console.log("Fetching expenses from Google Sheets URL:", googleSheetsUrl)
 

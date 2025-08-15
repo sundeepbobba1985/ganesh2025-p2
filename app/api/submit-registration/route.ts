@@ -7,7 +7,7 @@ export async function POST(request: NextRequest) {
     // Google Sheets Web App URL - you'll need to replace this with your actual URL
     const GOOGLE_SHEETS_URL =
       process.env.GOOGLE_SHEETS_URL ||
-      "https://script.google.com/macros/s/AKfycbxVEpIMwrfKlyveAdvYuJ1U-o8WiAG3KC2of8pjL9gNq7KaHY68aksEnsoL8D9fXnLjLA/exec"
+      "https://script.google.com/macros/s/AKfycbzhxDSSVgCEW0I7q9Ui7-w_z2_POP6SVaXqM6PGbWPbS3XgDUmjJLTal0jLZzBQwl6G/exec"
 
     // Send data to Google Sheets
     const response = await fetch(GOOGLE_SHEETS_URL, {

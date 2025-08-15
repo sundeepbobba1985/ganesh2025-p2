@@ -10,23 +10,29 @@ export async function POST(request: NextRequest) {
     const googleSheetsUrl =
       "https://script.google.com/macros/s/AKfycbzhxDSSVgCEW0I7q9Ui7-w_z2_POP6SVaXqM6PGbWPbS3XgDUmjJLTal0jLZzBQwl6G/exec"
 
-    const formData = new FormData()
-    formData.append("action", "addVolunteer")
-    formData.append("name", body.name || "")
-    formData.append("email", body.email || "")
-    formData.append("phone", body.phone || "")
-    formData.append("volunteerType", body.volunteerType || "")
-    formData.append("cleanupDate", body.cleanupDate || "")
-    formData.append("timestamp", new Date().toISOString())
+    const requestPayload = {
+      action: "addVolunteer",
+      name: body.name || "",
+      email: body.email || "",
+      phone: body.phone || "",
+      volunteerType: body.volunteerType || "",
+      cleanupDate: body.cleanupDate || "",
+      timestamp: new Date().toISOString(),
+    }
 
-    console.log("[v0] Sending to Google Apps Script with FormData")
+    console.log("[v0] Sending to Google Apps Script with JSON:", requestPayload)
 
     const response = await fetch(googleSheetsUrl, {
       method: "POST",
-      body: formData,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(requestPayload),
     })
 
     console.log("[v0] Google Apps Script response status:", response.status)
+    const result = await response.text()
+    console.log("[v0] Google Apps Script response:", result)
 
     if (response.ok) {
       console.log("[v0] Volunteer successfully submitted to Google Sheets")

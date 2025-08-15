@@ -405,22 +405,16 @@ export default function Home() {
   }
 
   const loadParticipants = async () => {
-    try {
-      setParticipantsLoading(true)
+    setLoadingParticipants(true)
 
+    try {
       const storedParticipants = JSON.parse(localStorage.getItem("registrations") || "[]")
       setParticipants(storedParticipants)
-
-      if (storedParticipants.length === 0) {
-        setParticipantsError("No participants registered yet")
-      } else {
-        setParticipantsError(null)
-      }
     } catch (error) {
       console.error("Error loading participants:", error)
-      setParticipantsError("Failed to load participants data")
+      setParticipants([])
     } finally {
-      setParticipantsLoading(false)
+      setLoadingParticipants(false)
     }
   }
 
@@ -1076,17 +1070,14 @@ export default function Home() {
                 </Button>
               </div>
 
-              {participantsLoading ? (
+              {loadingParticipants ? (
                 <div className="text-center py-8">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto mb-4"></div>
                   <p className="text-gray-600">Loading participants...</p>
                 </div>
-              ) : participantsError ? (
+              ) : participants.length === 0 ? (
                 <div className="text-center py-8">
-                  <p className="text-red-600 mb-4">{participantsError}</p>
-                  <Button onClick={loadParticipants} className="bg-orange-500 hover:bg-orange-600">
-                    Try Again
-                  </Button>
+                  <p className="text-gray-600">No participants registered yet</p>
                 </div>
               ) : (
                 <div>

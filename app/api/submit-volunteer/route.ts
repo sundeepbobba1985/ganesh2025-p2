@@ -1,6 +1,10 @@
 import { type NextRequest, NextResponse } from "next/server"
 
 export async function POST(request: NextRequest) {
+  console.log("[v0] VOLUNTEER API CALLED - Route is working!")
+  console.log("[v0] Request URL:", request.url)
+  console.log("[v0] Request method:", request.method)
+
   try {
     const body = await request.json()
     console.log("[v0] Volunteer submission received:", body)
@@ -57,4 +61,9 @@ export async function POST(request: NextRequest) {
     console.error("[v0] Error submitting volunteer registration:", error)
     return NextResponse.json({ success: false, error: "Failed to submit volunteer registration" }, { status: 500 })
   }
+}
+
+export async function GET() {
+  console.log("[v0] Volunteer API GET called - Route exists and is working")
+  return NextResponse.json({ message: "Volunteer API is working", timestamp: new Date().toISOString() })
 }

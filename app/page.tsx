@@ -258,6 +258,50 @@ export default function Home() {
     return () => clearTimeout(timer)
   }, [])
 
+  const handleSectionClick = async (sectionName: string) => {
+    if (sectionName === "Registration") {
+      if (!isSignedIn) {
+        alert("Please sign in with Google to register.")
+        return
+      }
+      setShowRegistrationForm(true)
+      return
+    }
+    if (sectionName === "Participants") {
+      if (!isSignedIn) {
+        alert("Please sign in with Google to view participants.")
+        return
+      }
+      setShowParticipants(true)
+      loadParticipants() // Use the Google Sheets API function
+      return
+    }
+    if (sectionName === "Financials") {
+      setShowFinancials(true)
+      setLoadingExpenses(true)
+
+      try {
+        console.log("Fetching expenses from API...")
+        const response = await fetch("/api/get-expenses")
+        const data = await response.json()
+        console.log("Expenses API response:", data)
+
+        if (data.success) {
+          setExpenses(data.expenses)
+        } else {
+          alert(`Failed to load expenses data: ${data.error || "Unknown error"}`)
+        }
+      } catch (error) {
+        console.error("Error fetching expenses:", error)
+        alert("Error loading expenses data")
+      } finally {
+        setLoadingExpenses(false)
+      }
+      return
+    }
+    console.log(`Accessing ${sectionName} section`)
+  }
+
   const handleProtectedSection = async (sectionName: string) => {
     if (!isSignedIn) {
       alert(`Please sign in with Google to access the ${sectionName} section.`)
@@ -539,9 +583,13 @@ export default function Home() {
   }
 
   const loadParticipants = async () => {
+    setLoadingParticipants(true)
     try {
+      console.log("[v0] Loading participants from Google Sheets...")
       const response = await fetch("/api/get-participants")
       const data = await response.json()
+
+      console.log("[v0] Participants API response:", data)
 
       if (data.success) {
         setParticipants(data.participants)
@@ -557,9 +605,16 @@ export default function Home() {
         )
 
         setDashboardStats(stats)
+        console.log("[v0] Dashboard stats calculated:", stats)
+      } else {
+        console.error("[v0] Failed to load participants:", data.error)
+        setParticipants([])
       }
     } catch (error) {
-      console.error("Failed to load participants:", error)
+      console.error("[v0] Error loading participants:", error)
+      setParticipants([])
+    } finally {
+      setLoadingParticipants(false)
     }
   }
 
@@ -706,7 +761,7 @@ export default function Home() {
                   <span className="text-sm font-medium">Home</span>
                 </a>
                 <button
-                  onClick={() => handleProtectedSection("Registration")}
+                  onClick={() => handleSectionClick("Registration")}
                   className="flex items-center space-x-2 text-gray-700 hover:text-orange-600 transition-colors"
                 >
                   <User className="w-4 h-4" />
@@ -736,7 +791,7 @@ export default function Home() {
                   <span className="text-sm font-medium">Gallery</span>
                 </button>
                 <button
-                  onClick={handleParticipantsSection}
+                  onClick={() => handleSectionClick("Participants")}
                   className="flex items-center space-x-2 text-gray-700 hover:text-orange-600 transition-colors"
                 >
                   <Users className="w-4 h-4" />
@@ -744,7 +799,7 @@ export default function Home() {
                   {!isSignedIn && <Lock className="w-3 h-3 text-gray-400" />}
                 </button>
                 <button
-                  onClick={() => handleProtectedSection("Financials")}
+                  onClick={() => handleSectionClick("Financials")}
                   className="flex items-center space-x-2 text-gray-700 hover:text-orange-600 transition-colors"
                 >
                   <DollarSign className="w-4 h-4" />
@@ -818,7 +873,7 @@ export default function Home() {
                 </a>
                 <button
                   onClick={() => {
-                    handleProtectedSection("Registration")
+                    handleSectionClick("Registration")
                     setIsMobileMenuOpen(false)
                   }}
                   className="flex items-center space-x-3 text-gray-700 hover:text-orange-600 transition-colors py-2 text-left"
@@ -857,7 +912,7 @@ export default function Home() {
                 </button>
                 <button
                   onClick={() => {
-                    handleParticipantsSection()
+                    handleSectionClick("Participants")
                     setIsMobileMenuOpen(false)
                   }}
                   className="flex items-center space-x-3 text-gray-700 hover:text-orange-600 transition-colors py-2 text-left"
@@ -868,7 +923,7 @@ export default function Home() {
                 </button>
                 <button
                   onClick={() => {
-                    handleProtectedSection("Financials")
+                    handleSectionClick("Financials")
                     setIsMobileMenuOpen(false)
                   }}
                   className="flex items-center space-x-3 text-gray-700 hover:text-orange-600 transition-colors py-2 text-left"

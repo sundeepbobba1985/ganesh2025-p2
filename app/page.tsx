@@ -1807,17 +1807,27 @@ export default function Home() {
                 <p className="text-gray-600 mb-4">
                   Help us capture all the beautiful moments! Upload your photos to our community gallery.
                 </p>
-                <a
-                  href="https://drive.google.com/drive/folders/1BxYZ3aBcDeFgHiJkLmNoPqRsTuVwXyZ0?usp=sharing"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+                  <h4 className="font-semibold text-yellow-800 mb-2">Setup Required</h4>
+                  <p className="text-yellow-700 text-sm mb-3">
+                    To enable photo uploads, please create a Google Drive folder and update the link below:
+                  </p>
+                  <ol className="text-yellow-700 text-sm space-y-1 mb-3">
+                    <li>1. Create a new folder in Google Drive</li>
+                    <li>2. Right-click → Share → Change to "Anyone with the link"</li>
+                    <li>3. Copy the sharing link</li>
+                    <li>4. Replace the placeholder URL in the code</li>
+                  </ol>
+                </div>
+                <button
+                  disabled
+                  className="inline-flex items-center px-4 py-2 bg-gray-400 text-white rounded-lg cursor-not-allowed"
                 >
                   <ExternalLink className="w-4 h-4 mr-2" />
-                  Upload to Google Drive
-                </a>
+                  Upload to Google Drive (Setup Required)
+                </button>
                 <p className="text-sm text-gray-500 mt-2">
-                  Click the link above to access our shared Google Drive folder and upload your event photos.
+                  Contact the admin to set up the Google Drive folder for photo uploads.
                 </p>
               </div>
 

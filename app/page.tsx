@@ -1807,27 +1807,28 @@ export default function Home() {
                 <p className="text-gray-600 mb-4">
                   Help us capture all the beautiful moments! Upload your photos to our community gallery.
                 </p>
-                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
-                  <h4 className="font-semibold text-yellow-800 mb-2">Setup Required</h4>
-                  <p className="text-yellow-700 text-sm mb-3">
-                    To enable photo uploads, please create a Google Drive folder and update the link below:
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+                  <h4 className="font-semibold text-green-800 mb-2">📸 Ready to Upload!</h4>
+                  <p className="text-green-700 text-sm mb-3">
+                    Click the button below to upload your photos directly to our community gallery folder.
                   </p>
-                  <ol className="text-yellow-700 text-sm space-y-1 mb-3">
-                    <li>1. Create a new folder in Google Drive</li>
-                    <li>2. Right-click → Share → Change to "Anyone with the link"</li>
-                    <li>3. Copy the sharing link</li>
-                    <li>4. Replace the placeholder URL in the code</li>
-                  </ol>
+                  <ul className="text-green-700 text-sm space-y-1">
+                    <li>• Upload photos from the event</li>
+                    <li>• Share candid moments and group photos</li>
+                    <li>• Help create lasting memories for everyone</li>
+                  </ul>
                 </div>
-                <button
-                  disabled
-                  className="inline-flex items-center px-4 py-2 bg-gray-400 text-white rounded-lg cursor-not-allowed"
+                <a
+                  href="https://drive.google.com/drive/folders/12flkHyZcjaquQ0qLY8KgY7LEIZEP2Krf"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
                 >
                   <ExternalLink className="w-4 h-4 mr-2" />
-                  Upload to Google Drive (Setup Required)
-                </button>
+                  Upload Photos to Google Drive
+                </a>
                 <p className="text-sm text-gray-500 mt-2">
-                  Contact the admin to set up the Google Drive folder for photo uploads.
+                  Opens in a new tab. You can drag and drop photos directly into the folder.
                 </p>
               </div>
 

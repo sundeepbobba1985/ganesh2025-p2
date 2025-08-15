@@ -28,16 +28,29 @@ export async function GET() {
     }
 
     const responseText = await response.text()
-    console.log("Raw response text:", responseText)
+    console.log("Raw response (first 500 chars):", responseText.substring(0, 500))
+
+    if (responseText.includes("<html>") || responseText.includes("<!DOCTYPE")) {
+      console.error("Received HTML response instead of JSON - likely a Google Apps Script error")
+      console.error("Full HTML response:", responseText)
+      throw new Error(
+        "Google Apps Script returned HTML error page instead of JSON. Check your script deployment and doGet function.",
+      )
+    }
 
     let data
     try {
       data = JSON.parse(responseText)
-      console.log("Parsed registration data:", data)
+      console.log("Successfully parsed JSON:", data)
     } catch (parseError) {
       console.error("JSON parse error:", parseError)
       console.error("Response was not valid JSON:", responseText)
-      throw new Error("Invalid JSON response from Google Sheets")
+      throw new Error(`Invalid JSON response from Google Sheets: ${responseText.substring(0, 200)}...`)
+    }
+
+    if (!data.success && data.error) {
+      console.error("Google Apps Script returned error:", data.error)
+      throw new Error(`Google Apps Script error: ${data.error}`)
     }
 
     const result = {
@@ -45,17 +58,11 @@ export async function GET() {
       registrations: data.participants || [],
     }
 
-    console.log("Returning result:", result)
-    console.log("=== END DEBUG ===")
-
+    console.log("Returning result with", result.registrations.length, "participants")
     return Response.json(result)
   } catch (error) {
     console.error("=== ERROR IN GET REGISTRATIONS ===")
-    console.error("Error details:", error)
-    console.error("Error message:", error.message)
-    console.error("Error stack:", error.stack)
-    console.error("=== END ERROR ===")
-
+    console.error("Error:", error.message)
     return Response.json(
       {
         success: false,

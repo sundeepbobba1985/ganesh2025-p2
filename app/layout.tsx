@@ -16,9 +16,9 @@ const playfair = Playfair_Display({
 })
 
 export const metadata: Metadata = {
-  title: "Lumina Community Events - Spring Gala 2025",
+  title: "Pecan Meadow Community Ganesh Chaturthi 2025",
   description:
-    "Exclusive community celebration bringing together neighbors for an unforgettable evening of connection and culture",
+    "Join Pecan Meadow Community for the celebration of Ganesh Chaturthi 2025 with traditional rituals, cultural programs, and community festivities",
   generator: "v0.dev",
 }
 

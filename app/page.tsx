@@ -9,7 +9,6 @@ import {
   Calendar,
   Clock,
   MapPin,
-  Users,
   HomeIcon,
   Lock,
   HelpCircle,
@@ -22,7 +21,6 @@ import {
   Heart,
   X,
   Settings,
-  Baby,
 } from "lucide-react"
 
 export default function Home() {
@@ -56,6 +54,15 @@ export default function Home() {
     date: "",
     paidBy: "",
     receipt: "",
+  })
+
+  const [showVolunteerModal, setShowVolunteerModal] = useState(false)
+  const [volunteerForm, setVolunteerForm] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    volunteerType: "",
+    cleanupDate: "",
   })
 
   const [adminEmails] = useState([
@@ -444,6 +451,49 @@ export default function Home() {
     localStorage.removeItem("userInfo")
   }
 
+  const handleVolunteerSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    try {
+      const response = await fetch("/api/submit-volunteer", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...volunteerForm,
+          timestamp: new Date().toISOString(),
+          userEmail: userInfo?.email || "anonymous",
+        }),
+      })
+
+      if (response.ok) {
+        alert("Thank you for volunteering! We will contact you with more details.")
+        setVolunteerForm({
+          name: "",
+          email: "",
+          phone: "",
+          volunteerType: "",
+          cleanupDate: "",
+        })
+        setShowVolunteerModal(false)
+      } else {
+        alert("Failed to submit volunteer registration. Please try again.")
+      }
+    } catch (error) {
+      console.error("Error submitting volunteer form:", error)
+      alert("Failed to submit volunteer registration. Please try again.")
+    }
+  }
+
+  const handleVolunteerSection = () => {
+    if (!isSignedIn) {
+      alert("Please sign in with Google to access volunteer registration.")
+      return
+    }
+    setShowVolunteerModal(true)
+  }
+
   // const loadParticipants = async () => {
   //   setLoadingParticipants(true)
   //   try {
@@ -585,6 +635,14 @@ export default function Home() {
                   <span className="text-sm font-medium">Registration</span>
                   {!isSignedIn && <Lock className="w-3 h-3 text-gray-400" />}
                 </button>
+                <button
+                  onClick={handleVolunteerSection}
+                  className="flex items-center space-x-2 text-gray-700 hover:text-orange-600 transition-colors"
+                >
+                  <Heart className="w-4 h-4" />
+                  <span className="text-sm font-medium">Volunteer</span>
+                  {!isSignedIn && <Lock className="w-3 h-3 text-gray-400" />}
+                </button>
                 <a
                   href="#"
                   className="flex items-center space-x-2 text-gray-700 hover:text-orange-600 transition-colors"
@@ -599,14 +657,6 @@ export default function Home() {
                   <Trophy className="w-4 h-4" />
                   <span className="text-sm font-medium">Gallery</span>
                 </a>
-                <button
-                  onClick={() => handleProtectedSection("Participants")}
-                  className="flex items-center space-x-2 text-gray-700 hover:text-orange-600 transition-colors"
-                >
-                  <Users className="w-4 h-4" />
-                  <span className="text-sm font-medium">Participants</span>
-                  {!isSignedIn && <Lock className="w-3 h-3 text-gray-400" />}
-                </button>
                 <button
                   onClick={() => handleProtectedSection("Financials")}
                   className="flex items-center space-x-2 text-gray-700 hover:text-orange-600 transition-colors"
@@ -691,6 +741,17 @@ export default function Home() {
                   <span className="font-medium">Registration</span>
                   {!isSignedIn && <Lock className="w-4 h-4 text-gray-400" />}
                 </button>
+                <button
+                  onClick={() => {
+                    handleVolunteerSection()
+                    setIsMobileMenuOpen(false)
+                  }}
+                  className="flex items-center space-x-3 text-gray-700 hover:text-orange-600 transition-colors py-2 text-left"
+                >
+                  <Heart className="w-5 h-5" />
+                  <span className="font-medium">Volunteer</span>
+                  {!isSignedIn && <Lock className="w-4 h-4 text-gray-400" />}
+                </button>
                 <a
                   href="#"
                   className="flex items-center space-x-3 text-gray-700 hover:text-orange-600 transition-colors py-2"
@@ -705,17 +766,6 @@ export default function Home() {
                   <Trophy className="w-5 h-5" />
                   <span className="font-medium">Gallery</span>
                 </a>
-                <button
-                  onClick={() => {
-                    handleProtectedSection("Participants")
-                    setIsMobileMenuOpen(false)
-                  }}
-                  className="flex items-center space-x-3 text-gray-700 hover:text-orange-600 transition-colors py-2 text-left"
-                >
-                  <Users className="w-5 h-5" />
-                  <span className="font-medium">Participants</span>
-                  {!isSignedIn && <Lock className="w-4 h-4 text-gray-400" />}
-                </button>
                 <button
                   onClick={() => {
                     handleProtectedSection("Financials")
@@ -1120,36 +1170,6 @@ export default function Home() {
                 </div>
               ) : (
                 <div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-                    <Card className="bg-gradient-to-br from-orange-50 to-red-50 border-orange-200">
-                      <CardContent className="p-4 text-center">
-                        <Users className="w-8 h-8 text-orange-600 mx-auto mb-2" />
-                        <p className="text-2xl font-bold text-orange-800">{participants.length}</p>
-                        <p className="text-orange-600 text-sm">Total Families</p>
-                      </CardContent>
-                    </Card>
-
-                    <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
-                      <CardContent className="p-4 text-center">
-                        <User className="w-8 h-8 text-blue-600 mx-auto mb-2" />
-                        <p className="text-2xl font-bold text-blue-800">
-                          {participants.reduce((sum, p) => sum + (p.adults || 0), 0)}
-                        </p>
-                        <p className="text-blue-600 text-sm">Total Adults</p>
-                      </CardContent>
-                    </Card>
-
-                    <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
-                      <CardContent className="p-4 text-center">
-                        <Baby className="w-8 h-8 text-green-600 mx-auto mb-2" />
-                        <p className="text-2xl font-bold text-green-800">
-                          {participants.reduce((sum, p) => sum + (p.kids || 0), 0)}
-                        </p>
-                        <p className="text-green-600 text-sm">Total Kids</p>
-                      </CardContent>
-                    </Card>
-                  </div>
-
                   <div className="space-y-3">
                     <h3 className="text-lg font-semibold text-gray-800 mb-4">Registered Families</h3>
                     {participants.map((participant, index) => (
@@ -1601,6 +1621,119 @@ export default function Home() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {showVolunteerModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-gray-800 flex items-center">
+                  <Heart className="w-6 h-6 text-orange-500 mr-2" />
+                  Volunteer Registration
+                </h2>
+                <button
+                  onClick={() => setShowVolunteerModal(false)}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              <form onSubmit={handleVolunteerSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
+                  <input
+                    type="text"
+                    required
+                    value={volunteerForm.name}
+                    onChange={(e) => setVolunteerForm({ ...volunteerForm, name: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    placeholder="Enter your full name"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Email Address *</label>
+                  <input
+                    type="email"
+                    required
+                    value={volunteerForm.email}
+                    onChange={(e) => setVolunteerForm({ ...volunteerForm, email: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    placeholder="Enter your email"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number *</label>
+                  <input
+                    type="tel"
+                    required
+                    value={volunteerForm.phone}
+                    onChange={(e) => setVolunteerForm({ ...volunteerForm, phone: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    placeholder="Enter your phone number"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Volunteer Opportunity *</label>
+                  <select
+                    required
+                    value={volunteerForm.volunteerType}
+                    onChange={(e) => setVolunteerForm({ ...volunteerForm, volunteerType: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  >
+                    <option value="">Select volunteer opportunity</option>
+                    <option value="decoration-23">Decoration (23rd August)</option>
+                    <option value="decoration-24">Decoration (24th August)</option>
+                    <option value="stage-build">Stage Build (23rd August)</option>
+                    <option value="buy-utensils">Buy utensils/water/drinks for pot luck</option>
+                    <option value="cleanup">Clean-up the venue</option>
+                    <option value="nimajjanam-prep">Nimajjanam Prep/Decor</option>
+                    <option value="nimajjanam-traffic">Nimajjanam traffic control</option>
+                  </select>
+                </div>
+
+                {volunteerForm.volunteerType === "cleanup" && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Preferred Clean-up Date *</label>
+                    <select
+                      required
+                      value={volunteerForm.cleanupDate}
+                      onChange={(e) => setVolunteerForm({ ...volunteerForm, cleanupDate: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    >
+                      <option value="">Select date</option>
+                      <option value="2025-08-26">August 26th, 2025</option>
+                      <option value="2025-08-27">August 27th, 2025</option>
+                      <option value="2025-08-28">August 28th, 2025</option>
+                      <option value="2025-08-29">August 29th, 2025</option>
+                      <option value="2025-08-30">August 30th, 2025</option>
+                    </select>
+                  </div>
+                )}
+
+                <div className="flex space-x-3 pt-4">
+                  <Button
+                    type="button"
+                    onClick={() => setShowVolunteerModal(false)}
+                    className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-lg transition-colors"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    className="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-medium py-2 px-4 rounded-lg transition-colors"
+                  >
+                    Register as Volunteer
+                  </Button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       )}

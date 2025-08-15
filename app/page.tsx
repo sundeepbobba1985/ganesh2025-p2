@@ -982,7 +982,10 @@ export default function Home() {
           <Card className="bg-white/90 backdrop-blur-sm border border-orange-200 shadow-2xl rounded-3xl overflow-hidden">
             <CardContent className="p-6 md:p-12">
               <div className="text-center mb-8 md:mb-10">
-                <div className="w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-orange-500 to-red-500 rounded-3xl mx-auto mb-6 md:mb-8 flex items-center justify-center shadow-lg">
+                <div
+                  className="w-12 h-12 md:w-16 md:h-16 bg-gradient-to-br from-orange-500 to-red-500 rounded-3xl mx-auto mb-6 flex items-center
+justify-center"
+                >
                   <Music className="w-8 h-8 md:w-10 md:h-10 text-white" />
                 </div>
                 <h2 className="text-gray-900 text-3xl md:text-4xl font-bold font-serif mb-4">Registration Process</h2>

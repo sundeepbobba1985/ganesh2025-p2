@@ -217,26 +217,16 @@ export default function Home() {
       setLoadingParticipants(true)
 
       try {
-        console.log("[v0] Fetching participants data...")
-        const response = await fetch("/api/get-registrations")
-        console.log("[v0] API Response status:", response.status)
-
-        const data = await response.json()
-        console.log("[v0] API Response data:", data)
-
-        if (data.success) {
-          console.log("[v0] Participants loaded:", data.registrations?.length || 0)
-          setParticipants(data.registrations || [])
-        } else {
-          console.error("[v0] API returned error:", data.error)
-          alert(`Failed to load participants data: ${data.error || "Unknown error"}`)
+        const storedRegistrations = localStorage.getItem("registrations")
+        if (storedRegistrations) {
+          const registrations = JSON.parse(storedRegistrations)
+          setParticipants(registrations)
         }
       } catch (error) {
-        console.error("[v0] Error fetching participants:", error)
-        alert(`Failed to load participants data: ${error instanceof Error ? error.message : "Network error"}`)
-      } finally {
-        setLoadingParticipants(false)
+        console.error("Error loading participants from localStorage:", error)
       }
+
+      setLoadingParticipants(false)
       return
     }
     if (sectionName === "Financials") {
@@ -265,22 +255,72 @@ export default function Home() {
     console.log(`Accessing ${sectionName} section`)
   }
 
-  const handleMenuClick = async (sectionName: string) => {
+  const handleMenuClick = (sectionName: string) => {
     if (
       !isSignedIn &&
-      (sectionName === "Participants" || sectionName === "Financials" || sectionName === "Registration")
+      (sectionName === "Registration" || sectionName === "Participants" || sectionName === "Financials")
     ) {
       alert("Please sign in with Google to access this section.")
       return
     }
+
     if (sectionName === "Registration") {
       setShowRegistrationForm(true)
       return
     }
+
     if (sectionName === "Participants") {
       setShowParticipants(true)
-      const storedParticipants = JSON.parse(localStorage.getItem("registrations") || "[]")
-      setParticipants(storedParticipants)
+      console.log("[v0] Loading participants from localStorage")
+      const storedRegistrations = localStorage.getItem("registrations")
+      console.log("[v0] Raw localStorage data:", storedRegistrations)
+
+      if (storedRegistrations) {
+        try {
+          const registrations = JSON.parse(storedRegistrations)
+          console.log("[v0] Parsed registrations:", registrations)
+          setParticipants(registrations)
+        } catch (error) {
+          console.error("[v0] Error parsing registrations:", error)
+          setParticipants([])
+        }
+      } else {
+        console.log("[v0] No registrations found in localStorage")
+        setParticipants([])
+      }
+      return
+    }
+  }
+
+  const handleMobileMenuClick = (sectionName: string) => {
+    setIsMobileMenuOpen(false)
+    if (
+      !isSignedIn &&
+      (sectionName === "Registration" || sectionName === "Participants" || sectionName === "Financials")
+    ) {
+      alert("Please sign in with Google to access this section.")
+      return
+    }
+
+    if (sectionName === "Registration") {
+      setShowRegistrationForm(true)
+      return
+    }
+
+    if (sectionName === "Participants") {
+      setShowParticipants(true)
+      const storedRegistrations = localStorage.getItem("registrations")
+      if (storedRegistrations) {
+        try {
+          const registrations = JSON.parse(storedRegistrations)
+          setParticipants(registrations)
+        } catch (error) {
+          console.error("Error parsing registrations:", error)
+          setParticipants([])
+        }
+      } else {
+        setParticipants([])
+      }
       return
     }
   }
@@ -404,23 +444,22 @@ export default function Home() {
     localStorage.removeItem("userInfo")
   }
 
-  const loadParticipants = async () => {
-    setLoadingParticipants(true)
+  // const loadParticipants = async () => {
+  //   setLoadingParticipants(true)
+  //   try {
+  //     const storedParticipants = JSON.parse(localStorage.getItem("registrations") || "[]")
+  //     setParticipants(storedParticipants)
+  //   } catch (error) {
+  //     console.error("Error loading participants:", error)
+  //     setParticipants([])
+  //   } finally {
+  //     setLoadingParticipants(false)
+  //   }
+  // }
 
-    try {
-      const storedParticipants = JSON.parse(localStorage.getItem("registrations") || "[]")
-      setParticipants(storedParticipants)
-    } catch (error) {
-      console.error("Error loading participants:", error)
-      setParticipants([])
-    } finally {
-      setLoadingParticipants(false)
-    }
-  }
-
-  useEffect(() => {
-    loadParticipants()
-  }, [])
+  // useEffect(() => {
+  //   loadParticipants()
+  // }, [])
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-red-50 relative">

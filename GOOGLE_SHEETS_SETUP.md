@@ -14,7 +14,33 @@ function doPost(e) {
     const data = JSON.parse(e.postData.contents)
     const action = data.action
     
-    if (action === 'addExpense') {
+    if (action === 'addVolunteer') {
+      // Handle volunteer data
+      const volunteerSheet = getOrCreateSheet('Volunteers')
+      
+      // Add headers if this is the first row
+      if (volunteerSheet.getLastRow() === 0) {
+        volunteerSheet
+          .getRange(1, 1, 1, 7)
+          .setValues([["Timestamp", "Full Name", "Email", "Mobile", "Volunteer Type", "Clean-up Date", "Submitted By"]])
+      }
+      
+      // Add the volunteer data
+      volunteerSheet.appendRow([
+        data.timestamp,
+        data.fullName,
+        data.email,
+        data.mobile,
+        data.volunteerType,
+        data.cleanupDate || '',
+        data.submittedBy,
+      ])
+      
+      return ContentService
+        .createTextOutput(JSON.stringify({ success: true, message: "Volunteer registration submitted successfully" }))
+        .setMimeType(ContentService.MimeType.JSON)
+        
+    } else if (action === 'addExpense') {
       // Handle expense data
       const expenseSheet = getOrCreateSheet('Expenses')
       
@@ -47,8 +73,8 @@ function doPost(e) {
       // Add headers if this is the first row
       if (registrationSheet.getLastRow() === 0) {
         registrationSheet
-          .getRange(1, 1, 1, 8)
-          .setValues([["Timestamp", "Full Name", "Email", "Address", "Mobile", "Adults", "Kids", "Signed In"]])
+          .getRange(1, 1, 1, 9)
+          .setValues([["Timestamp", "Full Name", "Email", "Address", "Mobile", "Adults", "Kids", "Zelle Confirmation", "Signed In"]])
       }
 
       // Add the registration data
@@ -60,6 +86,7 @@ function doPost(e) {
         data.mobile,
         data.adults,
         data.kids,
+        data.zelleConfirmation,
         data.signedInUser,
       ])
 
@@ -162,13 +189,14 @@ function getOrCreateSheet(sheetName) {
 
 ## Step 4: Test the Integration
 
-Once deployed, test the registration form on your website. Successful registrations will appear as new rows in your Google Sheet with all the form data and timestamps.
-
-**New Feature**: The Participants section will now display all registered participants when accessed by signed-in users. Additionally, the Expenses section will display all recorded expenses.
+Once deployed, test the registration, volunteer, and expense forms on your website. Successful submissions will appear as new rows in separate sheets:
+- **Registrations** sheet: Event registrations with Zelle confirmation
+- **Volunteers** sheet: Volunteer signups with contact details and preferences
+- **Expenses** sheet: Event expenses and financial tracking
 
 ## Troubleshooting
 
 - Make sure the Google Apps Script is deployed with "Anyone" access
 - Verify the environment variable is set correctly in Vercel
-- Check the Google Apps Script execution logs if registrations or expenses aren't appearing
-- If participants or expenses aren't loading, ensure the Google Apps Script includes both `doPost` and `doGet` functions
+- Check the Google Apps Script execution logs if data isn't appearing
+- The script will automatically create separate sheets for Registrations, Volunteers, and Expenses

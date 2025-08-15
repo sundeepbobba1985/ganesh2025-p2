@@ -100,7 +100,13 @@ export default function Home() {
     try {
       console.log("[v0] Loading dashboard stats from Google Sheets...")
       const response = await fetch("/api/get-participants")
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
       const data = await response.json()
+      console.log("[v0] Participants data received:", data)
 
       if (data.success && data.participants) {
         const stats = data.participants.reduce(
@@ -112,11 +118,16 @@ export default function Home() {
           },
           { totalFamilies: 0, totalAdults: 0, totalKids: 0 },
         )
+
         setDashboardStats(stats)
-        console.log("[v0] Dashboard stats loaded:", stats)
+        console.log("[v0] Dashboard stats loaded from Google Sheets:", stats)
+      } else {
+        console.log("[v0] No participants data received")
+        setDashboardStats({ totalFamilies: 0, totalAdults: 0, totalKids: 0 })
       }
     } catch (error) {
       console.error("[v0] Error loading dashboard stats:", error)
+      setDashboardStats({ totalFamilies: 0, totalAdults: 0, totalKids: 0 })
     }
   }
 
@@ -371,13 +382,7 @@ export default function Home() {
   }
 
   const handleMenuClick = (sectionName: string) => {
-    if (
-      !isSignedIn &&
-      (sectionName === "Registration" || sectionName === "Participants" || sectionName === "Financials")
-    ) {
-      alert("Please sign in with Google to access this section.")
-      return
-    }
+    setActiveSection(sectionName)
 
     if (sectionName === "Registration") {
       setShowRegistrationForm(true)
@@ -386,23 +391,7 @@ export default function Home() {
 
     if (sectionName === "Participants") {
       setShowParticipants(true)
-      console.log("[v0] Loading participants from localStorage")
-      const storedRegistrations = localStorage.getItem("registrations")
-      console.log("[v0] Raw localStorage data:", storedRegistrations)
-
-      if (storedRegistrations) {
-        try {
-          const registrations = JSON.parse(storedRegistrations)
-          console.log("[v0] Parsed registrations:", registrations)
-          setParticipants(registrations)
-        } catch (error) {
-          console.error("[v0] Error parsing registrations:", error)
-          setParticipants([])
-        }
-      } else {
-        console.log("[v0] No registrations found in localStorage")
-        setParticipants([])
-      }
+      loadParticipants()
       return
     }
   }
@@ -450,31 +439,62 @@ export default function Home() {
     setIsSubmitting(true)
 
     try {
+      const registrationData = {
+        fullName: formData.fullName,
+        email: formData.email,
+        address: formData.address,
+        mobile: formData.mobile,
+        adults: formData.adults,
+        kids: formData.kids,
+        zelleConfirmation: formData.zelleConfirmation,
+        submittedBy: userInfo?.email || "unknown",
+        timestamp: new Date().toISOString(),
+      }
+
+      // Store in localStorage immediately
+      const existingRegistrations = JSON.parse(localStorage.getItem("registrations") || "[]")
+      existingRegistrations.push({
+        name: registrationData.fullName,
+        email: registrationData.email,
+        adults: registrationData.adults,
+        kids: registrationData.kids,
+        timestamp: registrationData.timestamp,
+      })
+      localStorage.setItem("registrations", JSON.stringify(existingRegistrations))
+
+      // Submit to Google Sheets
       const response = await fetch("/api/submit-registration", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          ...formData,
-          signedInUser: userInfo?.email || "Not signed in",
-          timestamp: new Date().toISOString(),
-        }),
+        body: JSON.stringify(registrationData),
       })
 
-      if (response.ok) {
-        alert("Registration submitted successfully! Thank you for registering.")
-        setShowRegistrationForm(false)
-        setFormData({
-          fullName: "",
-          email: "",
-          address: "",
-          mobile: "",
-          adults: "",
-          kids: "",
-          zelleConfirmation: "",
-        })
-        // Reload dashboard stats after successful registration
+      const result = await response.json()
+
+      if (result.success) {
+        const handleRegistrationSuccess = () => {
+          setShowRegistrationForm(false)
+          setFormData({
+            fullName: "",
+            email: "",
+            address: "",
+            mobile: "",
+            adults: "",
+            kids: "",
+            zelleConfirmation: "",
+          })
+
+          // Refresh dashboard stats from Google Sheets
+          setTimeout(() => {
+            loadDashboardStats()
+          }, 2000) // Wait 2 seconds for Google Sheets to update
+
+          alert("Registration successful! Thank you for registering.")
+        }
+        handleRegistrationSuccess()
+
         loadDashboardStats()
       } else {
         alert("Registration failed. Please try again.")
@@ -596,31 +616,23 @@ export default function Home() {
     try {
       console.log("[v0] Loading participants from Google Sheets...")
       const response = await fetch("/api/get-participants")
-      const data = await response.json()
 
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const data = await response.json()
       console.log("[v0] Participants API response:", data)
 
-      if (data.success) {
+      if (data.success && data.participants) {
         setParticipants(data.participants)
-        // Calculate dashboard stats
-        const stats = data.participants.reduce(
-          (acc, participant) => {
-            acc.totalFamilies += 1
-            acc.totalAdults += Number.parseInt(participant.adults) || 0
-            acc.totalKids += Number.parseInt(participant.kids) || 0
-            return acc
-          },
-          { totalFamilies: 0, totalAdults: 0, totalKids: 0 },
-        )
-
-        setDashboardStats(stats)
-        console.log("[v0] Dashboard stats calculated:", stats)
+        console.log("[v0] Participants loaded from Google Sheets:", data.participants)
       } else {
-        console.error("[v0] Failed to load participants:", data.error)
+        console.log("[v0] No participants found in Google Sheets")
         setParticipants([])
       }
     } catch (error) {
-      console.error("[v0] Error loading participants:", error)
+      console.error("[v0] Error loading participants from Google Sheets:", error)
       setParticipants([])
     } finally {
       setLoadingParticipants(false)

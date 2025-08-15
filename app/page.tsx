@@ -83,9 +83,13 @@ export default function Home() {
 
   const [showGallery, setShowGallery] = useState(false)
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
+  const [showAddImages, setShowAddImages] = useState(false)
+  const [newImageUrl, setNewImageUrl] = useState("")
+  const [newImageCaption, setNewImageCaption] = useState("")
 
-  // Sample gallery images - replace with actual event photos
-  const galleryImages = [
+  const [loadingGalleryImages, setLoadingGalleryImages] = useState(false)
+
+  const [galleryImages, setGalleryImages] = useState([
     {
       url: "/ganesh-idol-flowers.png",
       caption: "Beautiful Ganesh idol with traditional decorations",
@@ -106,10 +110,34 @@ export default function Home() {
       url: "/indian-prasadam-offering.png",
       caption: "Traditional prasadam and community feast",
     },
-  ]
+  ])
+
+  const loadGoogleDriveImages = async () => {
+    setLoadingGalleryImages(true)
+    try {
+      const response = await fetch("/api/get-drive-images")
+      const data = await response.json()
+
+      if (data.success && data.images.length > 0) {
+        // Replace sample images with Google Drive images
+        setGalleryImages(
+          data.images.map((img: any) => ({
+            url: img.src,
+            caption: img.caption,
+          })),
+        )
+      }
+    } catch (error) {
+      console.error("Failed to load Google Drive images:", error)
+      // Keep sample images if API fails
+    } finally {
+      setLoadingGalleryImages(false)
+    }
+  }
 
   const handleGallerySection = () => {
     setShowGallery(true)
+    loadGoogleDriveImages()
   }
 
   const nextImage = () => {
@@ -118,6 +146,35 @@ export default function Home() {
 
   const prevImage = () => {
     setCurrentImageIndex((prev) => (prev - 1 + galleryImages.length) % galleryImages.length)
+  }
+
+  const isAdmin = () => {
+    return userInfo?.email && adminEmails.includes(userInfo.email)
+  }
+
+  const handleAddImage = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (newImageUrl.trim() && newImageCaption.trim()) {
+      const newImage = {
+        url: newImageUrl.trim(),
+        caption: newImageCaption.trim(),
+      }
+      setGalleryImages([...galleryImages, newImage])
+      setNewImageUrl("")
+      setNewImageCaption("")
+      setShowAddImages(false)
+      alert("Image added successfully!")
+    }
+  }
+
+  const handleRemoveImage = (index: number) => {
+    if (confirm("Are you sure you want to remove this image?")) {
+      const updatedImages = galleryImages.filter((_, i) => i !== index)
+      setGalleryImages(updatedImages)
+      if (currentImageIndex >= updatedImages.length) {
+        setCurrentImageIndex(Math.max(0, updatedImages.length - 1))
+      }
+    }
   }
 
   const handleGoogleSignIn = () => {
@@ -470,10 +527,6 @@ export default function Home() {
       console.error("Error submitting expense:", error)
       alert("Error recording expense. Please try again.")
     }
-  }
-
-  const isAdmin = () => {
-    return userInfo?.email && adminEmails.includes(userInfo.email)
   }
 
   const handleBudgetUpdate = (e: React.FormEvent) => {
@@ -1250,7 +1303,10 @@ export default function Home() {
           <Card className="bg-white w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl shadow-2xl mx-4">
             <CardContent className="p-6 md:p-8">
               <div className="text-center mb-6 md:mb-8">
-                <div className="w-12 h-12 md:w-16 md:h-16 bg-gradient-to-br from-orange-500 to-red-500 rounded-2xl mx-auto mb-4 flex items-center justify-center">
+                <div
+                  className="w-12 h-12 md:w-16 md:h-16 bg-gradient-to-br from-orange-500 to-red-500 rounded-2xl mx-auto mb-4 flex items-center
+justify-center"
+                >
                   <User className="w-6 h-6 md:w-8 md:h-8 text-white" />
                 </div>
                 <h2 className="text-gray-900 text-2xl md:text-3xl font-bold font-serif mb-2">Event Registration</h2>
@@ -1790,12 +1846,23 @@ export default function Home() {
             <div className="p-6">
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-bold text-gray-800">Event Gallery</h2>
-                <button
-                  onClick={() => setShowGallery(false)}
-                  className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
-                >
-                  ×
-                </button>
+                <div className="flex items-center space-x-2">
+                  {isAdmin() && (
+                    <button
+                      onClick={() => setShowAddImages(true)}
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm flex items-center space-x-2 transition-colors"
+                    >
+                      <Plus className="w-4 h-4" />
+                      <span>Add Images</span>
+                    </button>
+                  )}
+                  <button
+                    onClick={() => setShowGallery(false)}
+                    className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
+                  >
+                    ×
+                  </button>
+                </div>
               </div>
 
               {/* Google Drive Upload Section */}
@@ -1833,61 +1900,173 @@ export default function Home() {
               </div>
 
               {/* Slideshow Section */}
-              <div className="relative">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">Event Highlights</h3>
-
-                {/* Main Image Display */}
-                <div className="relative bg-gray-100 rounded-lg overflow-hidden mb-4">
-                  <img
-                    src={galleryImages[currentImageIndex].url || "/placeholder.svg"}
-                    alt={galleryImages[currentImageIndex].caption}
-                    className="w-full h-96 object-cover"
-                  />
-
-                  {/* Navigation Arrows */}
-                  <button
-                    onClick={prevImage}
-                    className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-75 transition-all"
-                  >
-                    <ChevronLeft className="w-6 h-6" />
-                  </button>
-                  <button
-                    onClick={nextImage}
-                    className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-75 transition-all"
-                  >
-                    <ChevronRight className="w-6 h-6" />
-                  </button>
-
-                  {/* Image Counter */}
-                  <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-50 text-white px-3 py-1 rounded-full text-sm">
-                    {currentImageIndex + 1} / {galleryImages.length}
-                  </div>
-                </div>
-
-                {/* Image Caption */}
-                <p className="text-center text-gray-600 mb-6">{galleryImages[currentImageIndex].caption}</p>
-
-                {/* Thumbnail Navigation */}
-                <div className="flex justify-center space-x-2 overflow-x-auto pb-2">
-                  {galleryImages.map((image, index) => (
+              {galleryImages.length > 0 ? (
+                <div className="relative">
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-lg font-semibold text-gray-800">Event Highlights</h3>
                     <button
-                      key={index}
-                      onClick={() => setCurrentImageIndex(index)}
-                      className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all ${
-                        index === currentImageIndex
-                          ? "border-orange-500 opacity-100"
-                          : "border-gray-300 opacity-60 hover:opacity-80"
-                      }`}
+                      onClick={loadGoogleDriveImages}
+                      disabled={loadingGalleryImages}
+                      className="flex items-center space-x-2 px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors disabled:opacity-50"
                     >
-                      <img
-                        src={image.url || "/placeholder.svg"}
-                        alt={`Thumbnail ${index + 1}`}
-                        className="w-full h-full object-cover"
-                      />
+                      <svg
+                        className={`w-4 h-4 ${loadingGalleryImages ? "animate-spin" : ""}`}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                        />
+                      </svg>
+                      <span>{loadingGalleryImages ? "Loading..." : "Refresh"}</span>
                     </button>
-                  ))}
+                  </div>
+
+                  {/* Main Image Display */}
+                  <div className="relative bg-gray-100 rounded-lg overflow-hidden mb-4">
+                    <img
+                      src={galleryImages[currentImageIndex].url || "/placeholder.svg"}
+                      alt={galleryImages[currentImageIndex].caption}
+                      className="w-full h-96 object-cover"
+                    />
+
+                    {isAdmin() && (
+                      <button
+                        onClick={() => handleRemoveImage(currentImageIndex)}
+                        className="absolute top-4 right-4 bg-red-500 hover:bg-red-600 text-white p-2 rounded-full transition-colors"
+                        title="Remove this image"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    )}
+
+                    {/* Navigation Arrows */}
+                    {galleryImages.length > 1 && (
+                      <>
+                        <button
+                          onClick={prevImage}
+                          className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-75 transition-all"
+                        >
+                          <ChevronLeft className="w-6 h-6" />
+                        </button>
+                        <button
+                          onClick={nextImage}
+                          className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-75 transition-all"
+                        >
+                          <ChevronRight className="w-6 h-6" />
+                        </button>
+                      </>
+                    )}
+
+                    {/* Image Counter */}
+                    <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-50 text-white px-3 py-1 rounded-full text-sm">
+                      {currentImageIndex + 1} / {galleryImages.length}
+                    </div>
+                  </div>
+
+                  {/* Image Caption */}
+                  <p className="text-center text-gray-600 mb-6">{galleryImages[currentImageIndex].caption}</p>
+
+                  {/* Thumbnail Navigation */}
+                  {galleryImages.length > 1 && (
+                    <div className="flex justify-center space-x-2 overflow-x-auto pb-2">
+                      {galleryImages.map((image, index) => (
+                        <button
+                          key={index}
+                          onClick={() => setCurrentImageIndex(index)}
+                          className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all ${
+                            index === currentImageIndex
+                              ? "border-orange-500 opacity-100"
+                              : "border-gray-300 opacity-60 hover:opacity-80"
+                          }`}
+                        >
+                          <img
+                            src={image.url || "/placeholder.svg"}
+                            alt={`Thumbnail ${index + 1}`}
+                            className="w-full h-full object-cover"
+                          />
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
+              ) : (
+                <div className="text-center py-8">
+                  <p className="text-gray-600">No images in gallery yet.</p>
+                  {isAdmin() && (
+                    <button
+                      onClick={() => setShowAddImages(true)}
+                      className="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg"
+                    >
+                      Add First Image
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showAddImages && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-md w-full">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-xl font-bold text-gray-800">Add Gallery Image</h3>
+                <button onClick={() => setShowAddImages(false)} className="text-gray-500 hover:text-gray-700">
+                  <X className="w-6 h-6" />
+                </button>
               </div>
+
+              <form onSubmit={handleAddImage} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Image URL *</label>
+                  <input
+                    type="url"
+                    value={newImageUrl}
+                    onChange={(e) => setNewImageUrl(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="https://drive.google.com/uc?id=YOUR_FILE_ID"
+                    required
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    For Google Drive: Right-click image → Get link → Change to "Anyone with link can view" → Copy link
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Caption *</label>
+                  <input
+                    type="text"
+                    value={newImageCaption}
+                    onChange={(e) => setNewImageCaption(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Describe this image..."
+                    required
+                  />
+                </div>
+
+                <div className="flex space-x-3 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setShowAddImages(false)}
+                    className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    Add Image
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         </div>

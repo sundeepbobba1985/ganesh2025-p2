@@ -14,15 +14,15 @@ import {
   HelpCircle,
   User,
   DollarSign,
-  Plus,
   Trophy,
   Search,
   Music,
   Heart,
+  Users,
   X,
   Settings,
+  Plus,
   ExternalLink,
-  Users,
 } from "lucide-react"
 
 export default function Home() {
@@ -403,18 +403,6 @@ export default function Home() {
 
     if (sectionName === "Participants") {
       setShowParticipants(true)
-      const storedRegistrations = localStorage.getItem("registrations")
-      if (storedRegistrations) {
-        try {
-          const registrations = JSON.parse(storedRegistrations)
-          setParticipants(registrations)
-        } catch (error) {
-          console.error("Error parsing registrations:", error)
-          setParticipants([])
-        }
-      } else {
-        setParticipants([])
-      }
       return
     }
   }
@@ -607,6 +595,14 @@ export default function Home() {
     setShowVolunteerModal(true)
   }
 
+  const handleParticipantsSection = () => {
+    if (!isSignedIn) {
+      alert("Please sign in with Google to view participants.")
+      return
+    }
+    setShowParticipants(true)
+  }
+
   const loadParticipants = async () => {
     if (loadingParticipants) return
 
@@ -637,14 +633,14 @@ export default function Home() {
     }
   }
 
-  const handleParticipantsSection = () => {
-    if (!isSignedIn) {
-      alert("Please sign in with Google to view participants.")
-      return
-    }
-    loadParticipants()
-    setActiveSection("Participants")
-  }
+  // const handleParticipantsSection = () => {
+  //   if (!isSignedIn) {
+  //     alert("Please sign in with Google to view participants.")
+  //     return
+  //   }
+  //   loadParticipants()
+  //   setActiveSection("Participants")
+  // }
 
   // const loadParticipants = async () => {
   //   setLoadingParticipants(true)
@@ -1323,18 +1319,33 @@ export default function Home() {
               <CardContent className="p-6 md:p-8">
                 <h3 className="text-gray-900 text-lg md:text-xl font-bold mb-4">Can I volunteer for the event?</h3>
                 <p className="text-gray-700 leading-relaxed text-base md:text-lg">
-                  We welcome volunteers for decoration, prasadam preparation, event coordination, and cleanup. Volunteer
-                  hours can count towards community service requirements.
+                  Yes! We welcome volunteers for setup, decoration, cooking, serving, cleanup, and cultural program
+                  coordination. Please use the volunteer registration form to sign up and specify your preferred areas
+                  of help.
                 </p>
               </CardContent>
             </Card>
 
             <Card className="bg-white/90 backdrop-blur-sm border border-orange-200 shadow-lg rounded-2xl">
               <CardContent className="p-6 md:p-8">
-                <h3 className="text-gray-900 text-lg md:text-xl font-bold mb-4">Are there activities for children?</h3>
+                <h3 className="text-gray-900 text-lg md:text-xl font-bold mb-4">What should I bring?</h3>
                 <p className="text-gray-700 leading-relaxed text-base md:text-lg">
-                  Yes! We have special children's programs including storytelling, art activities, talent showcase, and
-                  traditional games. Children will also receive commemorative items and participate in special rituals.
+                  Please bring your family, devotional spirit, and any special offerings you'd like to make to Lord
+                  Ganesha. We'll provide all necessary items for the celebration. If you'd like to contribute food for
+                  the community feast, please coordinate with the organizers.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white/90 backdrop-blur-sm border border-orange-200 shadow-lg rounded-2xl">
+              <CardContent className="p-6 md:p-8">
+                <h3 className="text-gray-900 text-lg md:text-xl font-bold mb-4">
+                  Is there an age limit for participation?
+                </h3>
+                <p className="text-gray-700 leading-relaxed text-base md:text-lg">
+                  No age limit! Our celebration welcomes families with children of all ages. We have special activities
+                  and programs designed for kids, and the entire event is family-friendly with a safe, welcoming
+                  environment.
                 </p>
               </CardContent>
             </Card>
@@ -1342,25 +1353,142 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Bottom Action Buttons */}
-      <section className="container mx-auto px-4 py-12 md:py-16 relative z-10">
-        <div className="flex flex-col sm:flex-row justify-center gap-4 md:gap-6">
-          <Button className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-bold px-8 md:px-12 py-4 rounded-full text-lg md:text-xl shadow-lg hover:shadow-xl transition-all transform hover:scale-105 w-full sm:w-auto">
-            View Event Schedule
-          </Button>
-          <Button
-            variant="outline"
-            className="border-2 border-orange-400 text-orange-600 hover:bg-orange-500 hover:text-white hover:border-orange-500 font-bold px-8 md:px-12 py-4 rounded-full text-lg md:text-xl bg-white/80 backdrop-blur-sm transition-all transform hover:scale-105 w-full sm:w-auto"
-          >
-            Photo Gallery
-          </Button>
-        </div>
-      </section>
+      {/* Registration Form Modal */}
+      {showRegistrationForm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <Card className="bg-white w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl shadow-2xl mx-4">
+            <CardContent className="p-6 md:p-8">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-gray-900 text-2xl md:text-3xl font-bold font-serif">Family Registration</h2>
+                <Button
+                  onClick={() => setShowRegistrationForm(false)}
+                  variant="outline"
+                  size="sm"
+                  className="rounded-full"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
 
-      {/* Participants Modal */}
+              <form onSubmit={handleSubmitRegistration} className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Full Name *</label>
+                    <input
+                      type="text"
+                      name="fullName"
+                      value={formData.fullName}
+                      onChange={handleInputChange}
+                      required
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      placeholder="Enter your full name"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Email Address *</label>
+                    <input
+                      type="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleInputChange}
+                      required
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      placeholder="Enter your email"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Home Address *</label>
+                  <textarea
+                    name="address"
+                    value={formData.address}
+                    onChange={handleInputChange}
+                    required
+                    rows={3}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    placeholder="Enter your complete address"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Mobile Number *</label>
+                  <input
+                    type="tel"
+                    name="mobile"
+                    value={formData.mobile}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    placeholder="Enter your mobile number"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Number of Adults *</label>
+                    <input
+                      type="number"
+                      name="adults"
+                      value={formData.adults}
+                      onChange={handleInputChange}
+                      required
+                      min="1"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      placeholder="0"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Number of Kids</label>
+                    <input
+                      type="number"
+                      name="kids"
+                      value={formData.kids}
+                      onChange={handleInputChange}
+                      min="0"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      placeholder="0"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Zelle Confirmation Number (Last 4 digits) *
+                  </label>
+                  <input
+                    type="text"
+                    name="zelleConfirmation"
+                    value={formData.zelleConfirmation}
+                    onChange={handleInputChange}
+                    required
+                    maxLength={4}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    placeholder="Enter last 4 digits"
+                  />
+                  <p className="text-sm text-gray-500 mt-1">
+                    Enter the last 4 digits of your Zelle confirmation number after payment
+                  </p>
+                </div>
+
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-bold py-4 rounded-lg text-lg shadow-lg hover:shadow-xl transition-all"
+                >
+                  {isSubmitting ? "Submitting..." : "Complete Registration"}
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
       {showParticipants && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <Card className="bg-white w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-3xl shadow-2xl mx-4">
+          <Card className="bg-white w-full max-w-2xl rounded-3xl shadow-2xl mx-4">
             <CardContent className="p-6 md:p-8">
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-gray-900 text-2xl md:text-3xl font-bold font-serif">Event Participants</h2>
@@ -1369,692 +1497,428 @@ export default function Home() {
                 </Button>
               </div>
 
-              {loadingParticipants ? (
-                <div className="text-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto mb-4"></div>
-                  <p className="text-gray-600">Loading participants...</p>
+              <div className="text-center py-8">
+                <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl mx-auto mb-6 flex items-center justify-center">
+                  <ExternalLink className="w-8 h-8 text-white" />
                 </div>
-              ) : participants.length === 0 ? (
-                <div className="text-center py-8">
-                  <p className="text-gray-600">No participants registered yet</p>
-                </div>
-              ) : (
+
+                <h3 className="text-xl font-bold text-gray-900 mb-4">View All Registered Participants</h3>
+                <p className="text-gray-600 mb-6">
+                  Click the button below to view the complete list of registered families and their details in Google
+                  Sheets.
+                </p>
+
+                <Button
+                  onClick={() =>
+                    window.open(
+                      "https://docs.google.com/spreadsheets/d/1igOvWnHleoYM3SO0WLvnZL_j5z3Z1vNFldGXgvcqlXA/edit?usp=sharing",
+                      "_blank",
+                    )
+                  }
+                  className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold px-8 py-4 rounded-full text-lg shadow-lg hover:shadow-xl transition-all transform hover:scale-105 flex items-center space-x-3 mx-auto"
+                >
+                  <ExternalLink className="w-5 h-5" />
+                  <span>View Participants List</span>
+                </Button>
+
+                <p className="text-sm text-gray-500 mt-4">Opens in a new tab • View-only access</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Volunteer Modal */}
+      {showVolunteerModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <Card className="bg-white w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl shadow-2xl mx-4">
+            <CardContent className="p-6 md:p-8">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-gray-900 text-2xl md:text-3xl font-bold font-serif">Volunteer Registration</h2>
+                <Button
+                  onClick={() => setShowVolunteerModal(false)}
+                  variant="outline"
+                  size="sm"
+                  className="rounded-full"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+
+              <form onSubmit={handleVolunteerSubmit} className="space-y-6">
                 <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Full Name *</label>
+                  <input
+                    type="text"
+                    value={volunteerForm.name}
+                    onChange={(e) => setVolunteerForm({ ...volunteerForm, name: e.target.value })}
+                    required
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    placeholder="Enter your full name"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Email Address *</label>
+                  <input
+                    type="email"
+                    value={volunteerForm.email}
+                    onChange={(e) => setVolunteerForm({ ...volunteerForm, email: e.target.value })}
+                    required
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    placeholder="Enter your email"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number *</label>
+                  <input
+                    type="tel"
+                    value={volunteerForm.phone}
+                    onChange={(e) => setVolunteerForm({ ...volunteerForm, phone: e.target.value })}
+                    required
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    placeholder="Enter your phone number"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Volunteer Type *</label>
+                  <select
+                    value={volunteerForm.volunteerType}
+                    onChange={(e) => setVolunteerForm({ ...volunteerForm, volunteerType: e.target.value })}
+                    required
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  >
+                    <option value="">Select volunteer type</option>
+                    <option value="Setup & Decoration">Setup & Decoration</option>
+                    <option value="Cooking & Food Prep">Cooking & Food Prep</option>
+                    <option value="Serving & Hospitality">Serving & Hospitality</option>
+                    <option value="Cultural Programs">Cultural Programs</option>
+                    <option value="Photography">Photography</option>
+                    <option value="Cleanup">Cleanup</option>
+                    <option value="General Support">General Support</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Preferred Cleanup Date</label>
+                  <select
+                    value={volunteerForm.cleanupDate}
+                    onChange={(e) => setVolunteerForm({ ...volunteerForm, cleanupDate: e.target.value })}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  >
+                    <option value="">Select cleanup date (optional)</option>
+                    <option value="August 30th Evening">August 30th Evening (After Nimajjan)</option>
+                    <option value="August 31st Morning">August 31st Morning</option>
+                    <option value="August 31st Evening">August 31st Evening</option>
+                    <option value="September 1st">September 1st</option>
+                  </select>
+                </div>
+
+                <Button
+                  type="submit"
+                  className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-bold py-4 rounded-lg text-lg shadow-lg hover:shadow-xl transition-all"
+                >
+                  Register as Volunteer
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Gallery Modal */}
+      {showGallery && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <Card className="bg-white w-full max-w-2xl rounded-3xl shadow-2xl mx-4">
+            <CardContent className="p-6 md:p-8">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-gray-900 text-2xl md:text-3xl font-bold font-serif">Event Gallery</h2>
+                <Button onClick={() => setShowGallery(false)} variant="outline" size="sm" className="rounded-full">
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+
+              <div className="text-center py-8">
+                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl mx-auto mb-6 flex items-center justify-center">
+                  <ExternalLink className="w-8 h-8 text-white" />
+                </div>
+
+                <h3 className="text-xl font-bold text-gray-900 mb-4">Upload & View Photos</h3>
+                <p className="text-gray-600 mb-6">
+                  Share your beautiful moments from the celebration! Upload photos and view pictures from other
+                  families.
+                </p>
+
+                <Button
+                  onClick={() =>
+                    window.open("https://drive.google.com/drive/folders/12flkHyZcjaquQ0qLY8KgY7LEIZEP2Krf", "_blank")
+                  }
+                  className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold px-8 py-4 rounded-full text-lg shadow-lg hover:shadow-xl transition-all transform hover:scale-105 flex items-center space-x-3 mx-auto"
+                >
+                  <ExternalLink className="w-5 h-5" />
+                  <span>Open Photo Gallery</span>
+                </Button>
+
+                <p className="text-sm text-gray-500 mt-4">
+                  Opens Google Drive in a new tab • Upload and download photos
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Financials Modal */}
+      {showFinancials && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <Card className="bg-white w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-3xl shadow-2xl mx-4">
+            <CardContent className="p-6 md:p-8">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-gray-900 text-2xl md:text-3xl font-bold font-serif">Event Financials</h2>
+                <Button onClick={() => setShowFinancials(false)} variant="outline" size="sm" className="rounded-full">
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+
+              {/* Budget Overview */}
+              <div className="mb-8">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-xl font-bold text-gray-800">Budget Overview</h3>
+                  {isAdmin() && (
+                    <Button
+                      onClick={() => setShowBudgetConfig(true)}
+                      variant="outline"
+                      size="sm"
+                      className="flex items-center space-x-2"
+                    >
+                      <Settings className="w-4 h-4" />
+                      <span>Configure</span>
+                    </Button>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="bg-blue-50 p-4 rounded-lg">
+                    <p className="text-blue-600 font-semibold">Total Budget</p>
+                    <p className="text-2xl font-bold text-blue-800">${eventBudget}</p>
+                  </div>
+                  <div className="bg-green-50 p-4 rounded-lg">
+                    <p className="text-green-600 font-semibold">Total Expenses</p>
+                    <p className="text-2xl font-bold text-green-800">
+                      ${expenses.reduce((sum, expense) => sum + Number.parseFloat(expense.amount || "0"), 0).toFixed(2)}
+                    </p>
+                  </div>
+                  <div className="bg-orange-50 p-4 rounded-lg">
+                    <p className="text-orange-600 font-semibold">Remaining</p>
+                    <p className="text-2xl font-bold text-orange-800">
+                      $
+                      {(
+                        eventBudget -
+                        expenses.reduce((sum, expense) => sum + Number.parseFloat(expense.amount || "0"), 0)
+                      ).toFixed(2)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Expenses List */}
+              <div className="mb-6">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-xl font-bold text-gray-800">Expenses</h3>
+                  {isAdmin() && (
+                    <Button
+                      onClick={() => setShowExpenseForm(true)}
+                      className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white flex items-center space-x-2"
+                    >
+                      <Plus className="w-4 h-4" />
+                      <span>Add Expense</span>
+                    </Button>
+                  )}
+                </div>
+
+                {loadingExpenses ? (
+                  <div className="text-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto mb-4"></div>
+                    <p className="text-gray-600">Loading expenses...</p>
+                  </div>
+                ) : expenses.length === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-gray-600">No expenses recorded yet</p>
+                  </div>
+                ) : (
                   <div className="space-y-3">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-4">Registered Families</h3>
-                    {participants.map((participant, index) => (
+                    {expenses.map((expense, index) => (
                       <Card key={index} className="border border-gray-200 hover:shadow-md transition-shadow">
                         <CardContent className="p-4">
                           <div className="flex justify-between items-start">
                             <div>
-                              <h4 className="font-semibold text-gray-900">{participant.name}</h4>
+                              <h4 className="font-semibold text-gray-900">{expense.description}</h4>
                               <div className="flex gap-4 mt-2 text-sm text-gray-500">
-                                <span>Adults: {participant.adults || 0}</span>
-                                <span>Kids: {participant.kids || 0}</span>
+                                <span>Category: {expense.category}</span>
+                                <span>Amount: ${expense.amount}</span>
+                                <span>Paid by: {expense.paidBy}</span>
                               </div>
                             </div>
                             <div className="text-right text-xs text-gray-400">
-                              {new Date(participant.timestamp).toLocaleDateString()}
+                              {new Date(expense.date).toLocaleDateString()}
                             </div>
                           </div>
                         </CardContent>
                       </Card>
                     ))}
                   </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
-      {/* Registration Form Modal */}
-      {showRegistrationForm && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <Card className="bg-white w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl shadow-2xl mx-4">
-            <CardContent className="p-6 md:p-8">
-              <div className="text-center mb-6 md:mb-8">
-                <div className="w-12 h-12 md:w-16 md:h-16 bg-gradient-to-br from-orange-500 to-red-500 rounded-2xl mx-auto mb-4 flex items-center justify-center">
-                  <User className="w-6 h-6 md:w-8 md:h-8 text-white" />
-                </div>
-                <h2 className="text-gray-900 text-2xl md:text-3xl font-bold font-serif mb-2">Event Registration</h2>
-                <p className="text-gray-600 text-sm md:text-base">
-                  Please fill in your details to complete registration
-                </p>
-              </div>
-
-              <form onSubmit={handleSubmitRegistration} className="space-y-4 md:space-y-6">
-                <div>
-                  <label htmlFor="fullName" className="block text-gray-700 font-semibold mb-2 text-sm md:text-base">
-                    Full Name *
-                  </label>
-                  <input
-                    type="text"
-                    id="fullName"
-                    name="fullName"
-                    value={formData.fullName}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors text-sm md:text-base"
-                    placeholder="Enter your full name"
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="email" className="block text-gray-700 font-semibold mb-2 text-sm md:text-base">
-                    E-Mail ID *
-                  </label>
-                  <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors text-sm md:text-base"
-                    placeholder="Enter your email address"
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="address" className="block text-gray-700 font-semibold mb-2 text-sm md:text-base">
-                    Address *
-                  </label>
-                  <textarea
-                    id="address"
-                    name="address"
-                    value={formData.address}
-                    onChange={handleInputChange}
-                    required
-                    rows={3}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors resize-none text-sm md:text-base"
-                    placeholder="Enter your complete address"
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="mobile" className="block text-gray-700 font-semibold mb-2 text-sm md:text-base">
-                    Mobile Number *
-                  </label>
-                  <input
-                    type="tel"
-                    id="mobile"
-                    name="mobile"
-                    value={formData.mobile}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors text-sm md:text-base"
-                    placeholder="Enter your mobile number"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor="adults" className="block text-gray-700 font-semibold mb-2 text-sm md:text-base">
-                      No. of Adults *
-                    </label>
-                    <input
-                      type="number"
-                      id="adults"
-                      name="adults"
-                      value={formData.adults}
-                      onChange={handleInputChange}
-                      required
-                      min="1"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors text-sm md:text-base"
-                      placeholder="0"
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="kids" className="block text-gray-700 font-semibold mb-2 text-sm md:text-base">
-                      No. of Kids
-                    </label>
-                    <input
-                      type="number"
-                      id="kids"
-                      name="kids"
-                      value={formData.kids}
-                      onChange={handleInputChange}
-                      min="0"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors text-sm md:text-base"
-                      placeholder="0"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="zelleConfirmation"
-                    className="block text-gray-700 font-semibold mb-2 text-sm md:text-base"
-                  >
-                    Last 4 Characters of Zelle Confirmation Number *
-                  </label>
-                  <input
-                    type="text"
-                    id="zelleConfirmation"
-                    name="zelleConfirmation"
-                    value={formData.zelleConfirmation || ""}
-                    onChange={handleInputChange}
-                    required
-                    maxLength={4}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors text-sm md:text-base"
-                    placeholder="Enter last 4 characters"
-                  />
-                </div>
-
-                <div className="bg-orange-50 border border-orange-200 rounded-xl p-4">
-                  <p className="text-orange-800 text-xs md:text-sm">
-                    <strong>Registration Fee:</strong> $75 per family
-                    <br />
-                    <strong>Payment:</strong> Zelle to pecanmeadowevents@gmail.com
-                  </p>
-                </div>
-
-                <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setShowRegistrationForm(false)}
-                    className="flex-1 border-2 border-gray-300 text-gray-700 hover:bg-gray-50 font-semibold py-3 rounded-xl"
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className={`flex-1 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-semibold py-3 rounded-xl shadow-lg hover:shadow-xl transition-all ${isSubmitting ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
-                  >
-                    {isSubmitting ? "Submitting..." : "Submit Registration"}
-                  </Button>
-                </div>
-              </form>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
-      {showFinancials && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-gray-200">
-              <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-bold text-gray-900">Event Financials</h2>
-                <button onClick={() => setShowFinancials(false)} className="text-gray-400 hover:text-gray-600">
-                  <X className="w-6 h-6" />
-                </button>
-              </div>
-            </div>
-
-            <div className="p-6">
-              <div className="flex flex-col sm:flex-row gap-4 mb-6">
-                <button
-                  onClick={() => setShowExpenseForm(true)}
-                  className="bg-orange-600 text-white px-6 py-2 rounded-lg hover:bg-orange-700 transition-colors flex items-center gap-2"
-                >
-                  <Plus className="w-4 h-4" />
-                  Add Expense
-                </button>
-                {isAdmin() && (
-                  <button
-                    onClick={() => setShowBudgetConfig(true)}
-                    className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
-                  >
-                    <Settings className="w-4 h-4" />
-                    Configure Budget
-                  </button>
                 )}
               </div>
-
-              {loadingExpenses ? (
-                <div className="text-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto"></div>
-                  <p className="mt-2 text-gray-600">Loading expenses...</p>
-                </div>
-              ) : (
-                <div>
-                  {/* Summary Cards */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                    <div className="bg-gradient-to-r from-green-500 to-green-600 text-white p-4 rounded-lg">
-                      <h3 className="text-sm font-medium opacity-90">Total Budget</h3>
-                      <p className="text-2xl font-bold">${eventBudget.toLocaleString()}</p>
-                    </div>
-                    <div className="bg-gradient-to-r from-red-500 to-red-600 text-white p-4 rounded-lg">
-                      <h3 className="text-sm font-medium opacity-90">Total Spent</h3>
-                      <p className="text-2xl font-bold">
-                        ${expenses.reduce((sum, expense) => sum + Number.parseFloat(expense.amount || 0), 0).toFixed(2)}
-                      </p>
-                    </div>
-                    <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-4 rounded-lg">
-                      <h3 className="text-sm font-medium opacity-90">Remaining</h3>
-                      <p className="text-2xl font-bold">
-                        $
-                        {(
-                          eventBudget -
-                          expenses.reduce((sum, expense) => sum + Number.parseFloat(expense.amount || 0), 0)
-                        ).toFixed(2)}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Expenses List */}
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <h3 className="text-lg font-semibold mb-4">Recent Expenses</h3>
-                    {expenses.length === 0 ? (
-                      <p className="text-gray-600 text-center py-8">No expenses recorded yet.</p>
-                    ) : (
-                      <div className="space-y-3">
-                        {expenses.map((expense, index) => (
-                          <div key={index} className="bg-white p-4 rounded-lg shadow-sm border">
-                            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
-                              <div className="flex-1">
-                                <div className="flex items-center gap-2 mb-1">
-                                  <span className="bg-orange-100 text-orange-800 px-2 py-1 rounded-full text-xs font-medium">
-                                    {expense.category}
-                                  </span>
-                                  <span className="text-sm text-gray-500">{expense.date}</span>
-                                </div>
-                                <h4 className="font-medium text-gray-900">{expense.description}</h4>
-                                <p className="text-sm text-gray-600">Paid by: {expense.paidBy}</p>
-                              </div>
-                              <div className="text-right">
-                                <p className="text-lg font-bold text-red-600">${expense.amount}</p>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </div>
       )}
 
+      {/* Budget Configuration Modal */}
       {showBudgetConfig && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
-            <div className="p-6 border-b border-gray-200">
-              <div className="flex justify-between items-center">
-                <h2 className="text-xl font-bold text-gray-900">Configure Event Budget</h2>
-                <button onClick={() => setShowBudgetConfig(false)} className="text-gray-400 hover:text-gray-600">
-                  <X className="w-6 h-6" />
-                </button>
-              </div>
-            </div>
-
-            <form onSubmit={handleBudgetUpdate} className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Event Budget ($)</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={newBudget}
-                  onChange={(e) => setNewBudget(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder={`Current: $${eventBudget.toLocaleString()}`}
-                  required
-                />
+          <Card className="bg-white w-full max-w-md rounded-3xl shadow-2xl mx-4">
+            <CardContent className="p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-xl font-bold text-gray-900">Configure Budget</h3>
+                <Button onClick={() => setShowBudgetConfig(false)} variant="outline" size="sm" className="rounded-full">
+                  <X className="w-4 h-4" />
+                </Button>
               </div>
 
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-                <p className="text-sm text-yellow-800">
-                  <strong>Admin Access:</strong> Only authorized administrators can modify the event budget.
-                </p>
-              </div>
+              <form onSubmit={handleBudgetUpdate} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Event Budget ($)</label>
+                  <input
+                    type="number"
+                    value={newBudget}
+                    onChange={(e) => setNewBudget(e.target.value)}
+                    required
+                    min="0"
+                    step="0.01"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    placeholder={`Current: $${eventBudget}`}
+                  />
+                </div>
 
-              <div className="flex gap-3">
-                <button
-                  type="button"
-                  onClick={() => setShowBudgetConfig(false)}
-                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
+                <Button
                   type="submit"
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-bold py-3 rounded-lg"
                 >
                   Update Budget
-                </button>
-              </div>
-            </form>
-          </div>
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
         </div>
       )}
 
+      {/* Expense Form Modal */}
       {showExpenseForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-gray-200">
-              <div className="flex justify-between items-center">
-                <h2 className="text-xl font-bold text-gray-900">Add Expense</h2>
-                <button onClick={() => setShowExpenseForm(false)} className="text-gray-400 hover:text-gray-600">
-                  <X className="w-6 h-6" />
-                </button>
-              </div>
-            </div>
-
-            <form onSubmit={handleExpenseSubmit} className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                <select
-                  value={expenseFormData.category}
-                  onChange={(e) => setExpenseFormData({ ...expenseFormData, category: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                  required
-                >
-                  <option value="">Select Category</option>
-                  <option value="Decorations">Decorations</option>
-                  <option value="Food & Prasadam">Food & Prasadam</option>
-                  <option value="Venue & Setup">Venue & Setup</option>
-                  <option value="Supplies">Supplies</option>
-                  <option value="Transportation">Transportation</option>
-                  <option value="Miscellaneous">Miscellaneous</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                <input
-                  type="text"
-                  value={expenseFormData.description}
-                  onChange={(e) => setExpenseFormData({ ...expenseFormData, description: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                  placeholder="What was purchased?"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Amount ($)</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={expenseFormData.amount}
-                  onChange={(e) => setExpenseFormData({ ...expenseFormData, amount: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                  placeholder="0.00"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
-                <input
-                  type="date"
-                  value={expenseFormData.date}
-                  onChange={(e) => setExpenseFormData({ ...expenseFormData, date: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Paid By</label>
-                <input
-                  type="text"
-                  value={expenseFormData.paidBy}
-                  onChange={(e) => setExpenseFormData({ ...expenseFormData, paidBy: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                  placeholder="Who paid for this expense?"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Receipt/Notes (Optional)</label>
-                <textarea
-                  value={expenseFormData.receipt}
-                  onChange={(e) => setExpenseFormData({ ...expenseFormData, receipt: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                  rows={3}
-                  placeholder="Receipt number or additional notes"
-                />
-              </div>
-
-              <div className="flex gap-3 pt-4">
-                <button
-                  type="button"
-                  onClick={() => setShowExpenseForm(false)}
-                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
-                >
-                  Add Expense
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {showVolunteerModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
+          <Card className="bg-white w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl shadow-2xl mx-4">
+            <CardContent className="p-6 md:p-8">
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-800 flex items-center">
-                  <Heart className="w-6 h-6 text-orange-500 mr-2" />
-                  Volunteer Registration
-                </h2>
-                <button
-                  onClick={() => setShowVolunteerModal(false)}
-                  className="text-gray-400 hover:text-gray-600 transition-colors"
-                >
-                  <X className="w-6 h-6" />
-                </button>
+                <h2 className="text-gray-900 text-2xl font-bold">Add Expense</h2>
+                <Button onClick={() => setShowExpenseForm(false)} variant="outline" size="sm" className="rounded-full">
+                  <X className="w-4 h-4" />
+                </Button>
               </div>
 
-              <form onSubmit={handleVolunteerSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
-                  <input
-                    type="text"
-                    required
-                    value={volunteerForm.name}
-                    onChange={(e) => setVolunteerForm({ ...volunteerForm, name: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                    placeholder="Enter your full name"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Email Address *</label>
-                  <input
-                    type="email"
-                    required
-                    value={volunteerForm.email}
-                    onChange={(e) => setVolunteerForm({ ...volunteerForm, email: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                    placeholder="Enter your email"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number *</label>
-                  <input
-                    type="tel"
-                    required
-                    value={volunteerForm.phone}
-                    onChange={(e) => setVolunteerForm({ ...volunteerForm, phone: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                    placeholder="Enter your phone number"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Volunteer Opportunity *</label>
-                  <select
-                    required
-                    value={volunteerForm.volunteerType}
-                    onChange={(e) => setVolunteerForm({ ...volunteerForm, volunteerType: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                  >
-                    <option value="">Select volunteer opportunity</option>
-                    <option value="decoration-23">Decoration (23rd August)</option>
-                    <option value="decoration-24">Decoration (24th August)</option>
-                    <option value="stage-build">Stage Build (23rd August)</option>
-                    <option value="buy-utensils">Buy utensils/water/drinks for pot luck</option>
-                    <option value="cleanup">Clean-up the venue</option>
-                    <option value="nimajjanam-prep">Nimajjanam Prep/Decor</option>
-                    <option value="nimajjanam-traffic">Nimajjanam traffic control</option>
-                  </select>
-                </div>
-
-                {volunteerForm.volunteerType === "cleanup" && (
+              <form onSubmit={handleExpenseSubmit} className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Preferred Clean-up Date *</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Category *</label>
                     <select
+                      value={expenseFormData.category}
+                      onChange={(e) => setExpenseFormData({ ...expenseFormData, category: e.target.value })}
                       required
-                      value={volunteerForm.cleanupDate}
-                      onChange={(e) => setVolunteerForm({ ...volunteerForm, cleanupDate: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                     >
-                      <option value="">Select date</option>
-                      <option value="2025-08-26">August 26th, 2025</option>
-                      <option value="2025-08-27">August 27th, 2025</option>
-                      <option value="2025-08-28">August 28th, 2025</option>
-                      <option value="2025-08-29">August 29th, 2025</option>
-                      <option value="2025-08-30">August 30th, 2025</option>
+                      <option value="">Select category</option>
+                      <option value="Decorations">Decorations</option>
+                      <option value="Food & Catering">Food & Catering</option>
+                      <option value="Priest & Rituals">Priest & Rituals</option>
+                      <option value="Supplies">Supplies</option>
+                      <option value="Entertainment">Entertainment</option>
+                      <option value="Miscellaneous">Miscellaneous</option>
                     </select>
                   </div>
-                )}
 
-                <div className="flex space-x-3 pt-4">
-                  <Button
-                    type="button"
-                    onClick={() => setShowVolunteerModal(false)}
-                    className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-lg transition-colors"
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    type="submit"
-                    className="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-medium py-2 px-4 rounded-lg transition-colors"
-                  >
-                    Register as Volunteer
-                  </Button>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Amount ($) *</label>
+                    <input
+                      type="number"
+                      value={expenseFormData.amount}
+                      onChange={(e) => setExpenseFormData({ ...expenseFormData, amount: e.target.value })}
+                      required
+                      min="0"
+                      step="0.01"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      placeholder="0.00"
+                    />
+                  </div>
                 </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      )}
 
-      {showGallery && (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-2xl w-full">
-            <div className="p-6">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-800">Event Gallery</h2>
-                <button
-                  onClick={() => setShowGallery(false)}
-                  className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Description *</label>
+                  <input
+                    type="text"
+                    value={expenseFormData.description}
+                    onChange={(e) => setExpenseFormData({ ...expenseFormData, description: e.target.value })}
+                    required
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    placeholder="Brief description of the expense"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Date *</label>
+                    <input
+                      type="date"
+                      value={expenseFormData.date}
+                      onChange={(e) => setExpenseFormData({ ...expenseFormData, date: e.target.value })}
+                      required
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Paid By *</label>
+                    <input
+                      type="text"
+                      value={expenseFormData.paidBy}
+                      onChange={(e) => setExpenseFormData({ ...expenseFormData, paidBy: e.target.value })}
+                      required
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      placeholder="Name of person who paid"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Receipt/Notes</label>
+                  <textarea
+                    value={expenseFormData.receipt}
+                    onChange={(e) => setExpenseFormData({ ...expenseFormData, receipt: e.target.value })}
+                    rows={3}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    placeholder="Additional notes or receipt details"
+                  />
+                </div>
+
+                <Button
+                  type="submit"
+                  className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-bold py-4 rounded-lg text-lg shadow-lg hover:shadow-xl transition-all"
                 >
-                  ×
-                </button>
-              </div>
-
-              <div className="text-center py-8">
-                <div className="mb-6">
-                  <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full mx-auto mb-4 flex items-center justify-center">
-                    <svg className="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                    </svg>
-                  </div>
-                  <h3 className="text-xl font-semibold text-gray-800 mb-2">View & Share Event Photos</h3>
-                  <p className="text-gray-600 mb-6">
-                    Access our community photo gallery to view all the beautiful moments from our Ganesh Chaturthi
-                    celebration. You can also upload your own photos to share with everyone!
-                  </p>
-                </div>
-
-                <div className="space-y-4">
-                  <a
-                    href="https://drive.google.com/drive/folders/12flkHyZcjaquQ0qLY8KgY7LEIZEP2Krf"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-lg font-medium"
-                  >
-                    <ExternalLink className="w-5 h-5 mr-2" />
-                    Open Photo Gallery
-                  </a>
-
-                  <div className="text-sm text-gray-500 space-y-1">
-                    <p>• View and download all event photos</p>
-                    <p>• Upload your own photos to share</p>
-                    <p>• Access from any device</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {activeSection === "Participants" && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
-            <div className="p-6 border-b border-gray-200 flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-gray-900">Registered Participants</h2>
-              <button
-                onClick={() => setActiveSection(null)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-              >
-                <X className="w-6 h-6" />
-              </button>
-            </div>
-
-            <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
-              {participants.length === 0 ? (
-                <div className="text-center py-12">
-                  <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                  <p className="text-gray-500 text-lg">No participants registered yet</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-                    <div className="bg-blue-50 rounded-lg p-4 text-center">
-                      <h3 className="text-2xl font-bold text-blue-600">{dashboardStats.totalFamilies}</h3>
-                      <p className="text-blue-800">Total Families</p>
-                    </div>
-                    <div className="bg-green-50 rounded-lg p-4 text-center">
-                      <h3 className="text-2xl font-bold text-green-600">{dashboardStats.totalAdults}</h3>
-                      <p className="text-green-800">Total Adults</p>
-                    </div>
-                    <div className="bg-purple-50 rounded-lg p-4 text-center">
-                      <h3 className="text-2xl font-bold text-purple-600">{dashboardStats.totalKids}</h3>
-                      <p className="text-purple-800">Total Kids</p>
-                    </div>
-                  </div>
-
-                  <div className="space-y-3">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Registered Families</h3>
-                    {participants.map((participant, index) => (
-                      <div key={index} className="bg-gray-50 rounded-lg p-4 flex items-center justify-between">
-                        <div>
-                          <h4 className="font-medium text-gray-900">{participant.name}</h4>
-                          <p className="text-sm text-gray-600">
-                            Adults: {participant.adults} | Kids: {participant.kids}
-                          </p>
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          {new Date(participant.timestamp).toLocaleDateString()}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
+                  Add Expense
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
         </div>
       )}
     </div>

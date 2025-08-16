@@ -112,10 +112,12 @@ export default function PVGaneshaClone() {
         console.log("[v0] Google Sheets response:", result)
         console.log("[v0] Success check:", result.success)
         console.log("[v0] Participants check:", result.participants)
+        console.log("[v0] Registrations check:", result.registrations)
         console.log("[v0] Participants length:", result.participants?.length)
+        console.log("[v0] Registrations length:", result.registrations?.length)
 
-        if (result.success && result.participants && result.participants.length > 0) {
-          const registrations = result.participants
+        const registrations = result.participants || result.registrations
+        if (result.success && registrations && registrations.length > 0) {
           console.log("[v0] Processing registrations:", registrations)
 
           const totalFamilies = registrations.length

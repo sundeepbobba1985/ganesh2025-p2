@@ -12,12 +12,14 @@ export async function POST(request: NextRequest) {
 
     const requestPayload = {
       action: "submitRegistration",
-      fullName: data.fullName,
+      familyName: data.fullName,
+      contactPerson: data.fullName,
       email: data.email,
+      phone: data.mobile,
       address: data.address,
-      mobile: data.mobile,
       adults: data.adults,
       kids: data.kids,
+      zelleConfirmation: data.zelleConfirmation,
       timestamp: data.timestamp,
       signedInUser: data.signedInUser,
     }

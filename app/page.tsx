@@ -71,6 +71,8 @@ export default function Home() {
     "admin1@gmail.com", // Replace with actual admin emails
     "admin2@gmail.com",
     "admin3@gmail.com",
+    "SUNDEEPBOBBA@GMAIL.COM", // Added user's email for admin access
+    "sundeepbobba@gmail.com", // Added lowercase version as well
   ])
   const [eventBudget, setEventBudget] = useState(2250) // Default budget
   const [showBudgetConfig, setShowBudgetConfig] = useState(false)
@@ -1760,15 +1762,13 @@ export default function Home() {
               <div className="mb-6">
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="text-xl font-bold text-gray-800">Expenses</h3>
-                  {isAdmin() && (
-                    <Button
-                      onClick={() => setShowExpenseForm(true)}
-                      className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white flex items-center space-x-2"
-                    >
-                      <Plus className="w-4 h-4" />
-                      <span>Add Expense</span>
-                    </Button>
-                  )}
+                  <Button
+                    onClick={() => setShowExpenseForm(true)}
+                    className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white flex items-center space-x-2"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>Add Expense</span>
+                  </Button>
                 </div>
 
                 {loadingExpenses ? (

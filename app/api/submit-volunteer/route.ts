@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
       action: "addVolunteer",
       name: body.name || "",
       email: body.email || "",
-      phone: body.phone || "",
+      phone: body.mobile || "", // Use mobile from form, not phone
       volunteerType: body.volunteerType || "",
       cleanupDate: body.cleanupDate || "",
       timestamp: new Date().toISOString(),

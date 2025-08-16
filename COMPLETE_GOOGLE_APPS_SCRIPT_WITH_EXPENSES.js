@@ -255,7 +255,17 @@ function handleRegistration(data) {
       console.log("Creating new Registrations sheet")
       registrationsSheet = spreadsheet.insertSheet("Registrations")
 
-      const headers = ["Timestamp", "Full Name", "Email", "Address", "Mobile", "Adults", "Kids", "Signed In"]
+      const headers = [
+        "Timestamp",
+        "Full Name",
+        "Email",
+        "Address",
+        "Mobile",
+        "Adults",
+        "Kids",
+        "Signed In",
+        "Zelle Confirmation",
+      ]
       registrationsSheet.getRange(1, 1, 1, headers.length).setValues([headers])
       registrationsSheet.getRange(1, 1, 1, headers.length).setFontWeight("bold")
       console.log("Registrations sheet created with headers")
@@ -271,6 +281,7 @@ function handleRegistration(data) {
       data.adults || 0, // Adults
       data.kids || 0, // Kids
       data.signedInUser || "", // Signed In
+      data.zelleConfirmation || "", // Added Zelle Confirmation data
     ]
 
     console.log("Adding registration data:", rowData)
@@ -342,6 +353,7 @@ function handleGetRegistrations() {
           adults: Number.parseInt(row[6]) || 0,
           kids: Number.parseInt(row[7]) || 0,
           timestamp: row[0] || "",
+          zelleConfirmation: row[8] || "", // Added Zelle Confirmation data
         })
       }
     }

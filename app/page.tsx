@@ -121,9 +121,9 @@ export default function PVGaneshaClone() {
       console.log("[v0] No local data found, setting initial statistics...")
       const initialRegistrations = [
         { id: 1, familyName: "Initial Family 1", adults: 3, kids: 2, timestamp: new Date().toISOString() },
-        { id: 2, familyName: "Initial Family 2", adults: 2, kids: 3, timestamp: new Date().toISOString() },
+        { id: 2, familyName: "Initial Family 2", adults: 2, kids: 2, timestamp: new Date().toISOString() },
         { id: 3, familyName: "Initial Family 3", adults: 3, kids: 2, timestamp: new Date().toISOString() },
-        { id: 4, familyName: "Initial Family 4", adults: 2, kids: 1, timestamp: new Date().toISOString() },
+        { id: 4, familyName: "Initial Family 4", adults: 2, kids: 2, timestamp: new Date().toISOString() },
       ]
 
       localStorage.setItem("pv-ganesha-registrations", JSON.stringify(initialRegistrations))
@@ -136,14 +136,8 @@ export default function PVGaneshaClone() {
     }
   }
 
-  const resetRegistrationStats = () => {
-    localStorage.removeItem("pv-ganesha-registrations")
-    setDashboardStats({ totalFamilies: 0, totalAdults: 0, totalKids: 0 })
-    console.log("[v0] Registration statistics reset to zero")
-  }
-
   useEffect(() => {
-    resetRegistrationStats()
+    loadDashboardStats() // Load dashboard stats instead of resetting
     loadFinancials()
 
     const initVisitorCounter = () => {

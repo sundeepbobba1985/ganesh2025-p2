@@ -109,19 +109,35 @@ export default function PVGaneshaClone() {
         const response = await fetch("/api/get-registrations")
         const result = await response.json()
 
+        console.log("[v0] Google Sheets response:", result)
+        console.log("[v0] Success check:", result.success)
+        console.log("[v0] Participants check:", result.participants)
+        console.log("[v0] Participants length:", result.participants?.length)
+
         if (result.success && result.participants && result.participants.length > 0) {
           const registrations = result.participants
+          console.log("[v0] Processing registrations:", registrations)
+
           const totalFamilies = registrations.length
-          const totalAdults = registrations.reduce((sum: number, r: any) => sum + Number(r.adults || 0), 0)
-          const totalKids = registrations.reduce((sum: number, r: any) => sum + Number(r.kids || 0), 0)
+          const totalAdults = registrations.reduce((sum: number, r: any) => {
+            console.log("[v0] Processing adult count for:", r.familyName, "adults:", r.adults)
+            return sum + Number(r.adults || 0)
+          }, 0)
+          const totalKids = registrations.reduce((sum: number, r: any) => {
+            console.log("[v0] Processing kid count for:", r.familyName, "kids:", r.kids)
+            return sum + Number(r.kids || 0)
+          }, 0)
 
           const stats = { totalFamilies, totalAdults, totalKids }
+          console.log("[v0] Calculated stats from Google Sheets:", stats)
           setDashboardStats(stats)
 
           localStorage.setItem("pv-ganesha-registrations", JSON.stringify(registrations))
 
           console.log("[v0] Dashboard stats loaded from Google Sheets:", stats)
           return
+        } else {
+          console.log("[v0] Google Sheets data validation failed - falling back to localStorage")
         }
       } catch (sheetsError) {
         console.warn("[v0] Failed to load from Google Sheets, falling back to localStorage:", sheetsError)

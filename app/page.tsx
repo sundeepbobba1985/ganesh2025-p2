@@ -1943,7 +1943,7 @@ export default function Home() {
 
       <footer className="bg-gradient-to-r from-orange-100 to-amber-100 border-t border-orange-200 py-6 relative z-10">
         <div className="container mx-auto px-4 text-center">
-          <p className="text-gray-600 text-sm">Built by Sundeep • Powered by Vercel ❤️ for community</p>
+          <p className="text-gray-600 text-sm">Built by Sundeep with ❤️ for Community Powered by Vercel</p>
         </div>
       </footer>
     </div>

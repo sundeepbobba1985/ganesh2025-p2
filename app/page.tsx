@@ -103,9 +103,47 @@ export default function Home() {
     loadDashboardStats()
   }, [])
 
+  const saveRegistrationToLocalStorage = (registrationData: any) => {
+    try {
+      const existingData = localStorage.getItem("pv-ganesha-registrations")
+      const registrations = existingData ? JSON.parse(existingData) : []
+
+      const newRegistration = {
+        id: Date.now(),
+        familyName: registrationData.fullName,
+        adults: Number.parseInt(registrationData.adults) || 0,
+        kids: Number.parseInt(registrationData.kids) || 0,
+        timestamp: new Date().toISOString(),
+        ...registrationData,
+      }
+
+      registrations.push(newRegistration)
+      localStorage.setItem("pv-ganesha-registrations", JSON.stringify(registrations))
+      console.log("[v0] Registration saved to local storage:", newRegistration)
+    } catch (error) {
+      console.error("[v0] Error saving to local storage:", error)
+    }
+  }
+
   const loadDashboardStats = async () => {
     try {
-      console.log("[v0] Loading dashboard stats from Google Sheets...")
+      console.log("[v0] Loading dashboard stats from local storage...")
+      const localData = localStorage.getItem("pv-ganesha-registrations")
+
+      if (localData) {
+        const registrations = JSON.parse(localData)
+        const totalFamilies = registrations.length
+        const totalAdults = registrations.reduce((sum: number, r: any) => sum + (r.adults || 0), 0)
+        const totalKids = registrations.reduce((sum: number, r: any) => sum + (r.kids || 0), 0)
+
+        const stats = { totalFamilies, totalAdults, totalKids }
+        setDashboardStats(stats)
+        console.log("[v0] Dashboard stats loaded from local storage:", stats)
+        return
+      }
+
+      // Fallback to Google Sheets if no local data
+      console.log("[v0] No local data found, trying Google Sheets...")
       const response = await fetch("/api/get-registrations")
 
       if (!response.ok) {
@@ -129,7 +167,7 @@ export default function Home() {
         setDashboardStats({ totalFamilies: 0, totalAdults: 0, totalKids: 0 })
       }
     } catch (error) {
-      console.error("[v0] Error loading dashboard stats from Google Sheets:", error)
+      console.error("[v0] Error loading dashboard stats:", error)
       setDashboardStats({ totalFamilies: 0, totalAdults: 0, totalKids: 0 })
     }
   }
@@ -468,6 +506,8 @@ export default function Home() {
           console.warn("[v0] Google Sheets backup failed, but JSON storage succeeded:", backupError)
         }
 
+        saveRegistrationToLocalStorage(formData)
+
         // Refresh dashboard stats
         await loadDashboardStats()
 
@@ -483,10 +523,7 @@ export default function Home() {
             zelleConfirmation: "",
           })
 
-          // Refresh dashboard stats from Google Sheets
-          setTimeout(() => {
-            loadDashboardStats()
-          }, 2000) // Wait 2 seconds for Google Sheets to update
+          loadDashboardStats()
 
           alert("Registration successful! Thank you for registering.")
         }

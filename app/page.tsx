@@ -99,25 +99,31 @@ export default function Home() {
 
   const loadDashboardStats = async () => {
     try {
-      console.log("[v0] Loading dashboard stats from JSON file...")
-      const response = await fetch("/api/participants")
+      console.log("[v0] Loading dashboard stats from Google Sheets...")
+      const response = await fetch("/api/get-registrations")
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
 
       const data = await response.json()
-      console.log("[v0] Participants data received:", data)
+      console.log("[v0] Registration data received from Google Sheets:", data)
 
-      if (data.success && data.stats) {
-        setDashboardStats(data.stats)
-        console.log("[v0] Dashboard stats loaded from JSON file:", data.stats)
+      if (data.success && data.participants) {
+        // Calculate stats from Google Sheets data
+        const totalFamilies = data.participants.length
+        const totalAdults = data.participants.reduce((sum: number, p: any) => sum + (Number.parseInt(p.adults) || 0), 0)
+        const totalKids = data.participants.reduce((sum: number, p: any) => sum + (Number.parseInt(p.kids) || 0), 0)
+
+        const stats = { totalFamilies, totalAdults, totalKids }
+        setDashboardStats(stats)
+        console.log("[v0] Dashboard stats calculated from Google Sheets:", stats)
       } else {
-        console.log("[v0] No participants data received")
+        console.log("[v0] No registration data received from Google Sheets")
         setDashboardStats({ totalFamilies: 0, totalAdults: 0, totalKids: 0 })
       }
     } catch (error) {
-      console.error("[v0] Error loading dashboard stats:", error)
+      console.error("[v0] Error loading dashboard stats from Google Sheets:", error)
       setDashboardStats({ totalFamilies: 0, totalAdults: 0, totalKids: 0 })
     }
   }

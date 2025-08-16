@@ -103,6 +103,30 @@ export default function PVGaneshaClone() {
 
   const loadDashboardStats = async () => {
     try {
+      console.log("[v0] Loading dashboard stats from Google Sheets...")
+
+      try {
+        const response = await fetch("/api/get-registrations")
+        const result = await response.json()
+
+        if (result.success && result.participants && result.participants.length > 0) {
+          const registrations = result.participants
+          const totalFamilies = registrations.length
+          const totalAdults = registrations.reduce((sum: number, r: any) => sum + Number(r.adults || 0), 0)
+          const totalKids = registrations.reduce((sum: number, r: any) => sum + Number(r.kids || 0), 0)
+
+          const stats = { totalFamilies, totalAdults, totalKids }
+          setDashboardStats(stats)
+
+          localStorage.setItem("pv-ganesha-registrations", JSON.stringify(registrations))
+
+          console.log("[v0] Dashboard stats loaded from Google Sheets:", stats)
+          return
+        }
+      } catch (sheetsError) {
+        console.warn("[v0] Failed to load from Google Sheets, falling back to localStorage:", sheetsError)
+      }
+
       console.log("[v0] Loading dashboard stats from local storage...")
       const localData = localStorage.getItem("pv-ganesha-registrations")
 
@@ -118,7 +142,7 @@ export default function PVGaneshaClone() {
         return
       }
 
-      console.log("[v0] No local data found, setting initial statistics...")
+      console.log("[v0] No data found anywhere, setting initial statistics...")
       const initialRegistrations = [
         { id: 1, familyName: "Initial Family 1", adults: 3, kids: 2, timestamp: new Date().toISOString() },
         { id: 2, familyName: "Initial Family 2", adults: 2, kids: 2, timestamp: new Date().toISOString() },

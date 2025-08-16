@@ -4,21 +4,33 @@ export async function GET() {
       "https://script.google.com/macros/s/AKfycbwg9YCJJc1BUNzDI1vbCQ_8nP6XROAeK9KWtxtuhOnvwBbgKkLE_k71tpa8N4muobLcbA/exec"
 
     console.log("[v0] GET registrations - calling Google Apps Script")
-    console.log("[v0] Using hardcoded URL:", GOOGLE_APPS_SCRIPT_URL)
 
     const url = `${GOOGLE_APPS_SCRIPT_URL}?action=getRegistrations`
-    console.log("[v0] Full request URL:", url)
 
-    const response = await fetch(url, {
+    let response = await fetch(url, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
       },
-      redirect: "follow",
+      redirect: "manual", // Handle redirects manually
     })
 
-    console.log("[v0] Response status:", response.status)
-    console.log("[v0] Response headers:", Object.fromEntries(response.headers.entries()))
+    // Follow redirects manually up to 3 times
+    let redirectCount = 0
+    while (response.status === 302 && redirectCount < 3) {
+      const location = response.headers.get("location")
+      if (!location) break
+
+      console.log(`[v0] Following redirect ${redirectCount + 1} to:`, location)
+      response = await fetch(location, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        redirect: "manual",
+      })
+      redirectCount++
+    }
 
     if (!response.ok) {
       console.log(`[v0] Google Apps Script returned status ${response.status}, falling back to empty data`)
@@ -32,7 +44,6 @@ export async function GET() {
 
     const responseText = await response.text()
     console.log("[v0] Raw response length:", responseText.length)
-    console.log("[v0] Raw response preview:", responseText.substring(0, 500))
 
     // Check if response is HTML (error page)
     if (responseText.includes("<html>") || responseText.includes("<!DOCTYPE")) {
@@ -46,7 +57,7 @@ export async function GET() {
     }
 
     const data = JSON.parse(responseText)
-    console.log("[v0] Parsed data:", data)
+    console.log("[v0] Parsed registration data:", data)
 
     return Response.json({
       success: true,

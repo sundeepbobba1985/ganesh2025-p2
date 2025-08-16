@@ -1395,27 +1395,6 @@ export default function Home() {
                 </p>
               </CardContent>
             </Card>
-
-            <Card className="bg-white/90 backdrop-blur-sm border border-orange-200 shadow-lg rounded-2xl">
-              <CardContent className="p-6 md:p-8">
-                <h3 className="text-gray-900 text-lg md:text-xl font-bold mb-4">
-                  Is there an age limit for participation?
-                </h3>
-                <p className="text-gray-700 leading-relaxed text-base md:text-lg mb-4">
-                  No age limit! Our celebration welcomes families with children of all ages. We have special activities
-                  and programs designed for kids, and the entire event is family-friendly with a safe, welcoming
-                  environment.
-                </p>
-                <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mt-4">
-                  <h4 className="font-semibold text-amber-800 mb-2">Important Guidelines:</h4>
-                  <ul className="text-amber-700 text-sm space-y-1">
-                    <li>• Parents must supervise their children at all times during the event</li>
-                    <li>• Please be mindful of host family privacy and respect their home</li>
-                    <li>• Children should stay with their families in designated celebration areas</li>
-                  </ul>
-                </div>
-              </CardContent>
-            </Card>
           </div>
         </div>
       </section>

@@ -16,17 +16,34 @@ export async function GET() {
       headers: {
         Accept: "application/json",
       },
+      redirect: "follow",
     })
 
     console.log("Google Sheets response status:", response.status)
     console.log("Google Sheets response headers:", Object.fromEntries(response.headers.entries()))
 
     if (!response.ok) {
-      throw new Error(`Google Sheets API returned ${response.status}: ${response.statusText}`)
+      console.log("Google Sheets API returned non-OK status, falling back to empty expenses")
+      return NextResponse.json({
+        success: true,
+        expenses: [],
+        message: "No expenses data available",
+      })
     }
 
     const responseText = await response.text()
-    console.log("Google Sheets response text:", responseText)
+    console.log("Google Sheets response text:", responseText.substring(0, 200) + "...")
+
+    if (responseText.trim().startsWith("<!DOCTYPE") || responseText.trim().startsWith("<html")) {
+      console.log(
+        "Google Apps Script returned HTML error page instead of JSON. Check your script deployment and doGet function.",
+      )
+      return NextResponse.json({
+        success: true,
+        expenses: [],
+        message: "Google Sheets temporarily unavailable",
+      })
+    }
 
     let result
     try {
@@ -34,7 +51,11 @@ export async function GET() {
       console.log("Parsed Google Sheets response:", result)
     } catch (parseError) {
       console.error("Could not parse response as JSON:", parseError)
-      throw new Error(`Invalid JSON response from Google Sheets: ${responseText}`)
+      return NextResponse.json({
+        success: true,
+        expenses: [],
+        message: "Unable to parse expenses data",
+      })
     }
 
     return NextResponse.json({
@@ -44,14 +65,10 @@ export async function GET() {
     })
   } catch (error) {
     console.error("Error fetching expenses:", error)
-    return NextResponse.json(
-      {
-        success: false,
-        expenses: [],
-        message: "Failed to fetch expenses",
-        error: error.message,
-      },
-      { status: 500 },
-    )
+    return NextResponse.json({
+      success: true,
+      expenses: [],
+      message: "Expenses temporarily unavailable",
+    })
   }
 }

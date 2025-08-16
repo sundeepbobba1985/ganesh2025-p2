@@ -210,8 +210,7 @@ function handleVolunteer(data) {
       console.log("Creating new Volunteers sheet")
       volunteersSheet = spreadsheet.insertSheet("Volunteers")
 
-      // Add headers
-      const headers = ["Timestamp", "Full Name", "Email", "Phone", "Volunteer Type", "Cleanup Date"]
+      const headers = ["Timestamp", "Full Name", "Email", "Volunteer Type", "Cleanup Date"]
       volunteersSheet.getRange(1, 1, 1, headers.length).setValues([headers])
       volunteersSheet.getRange(1, 1, 1, headers.length).setFontWeight("bold")
       console.log("Volunteers sheet created with headers")
@@ -219,14 +218,7 @@ function handleVolunteer(data) {
 
     // Add volunteer data
     const timestamp = new Date()
-    const rowData = [
-      timestamp,
-      data.name || "",
-      data.email || "",
-      data.phone || "",
-      data.volunteerType || "",
-      data.cleanupDate || "",
-    ]
+    const rowData = [timestamp, data.name || "", data.email || "", data.volunteerType || "", data.cleanupDate || ""]
 
     console.log("Adding volunteer data:", rowData)
     volunteersSheet.appendRow(rowData)
@@ -263,35 +255,22 @@ function handleRegistration(data) {
       console.log("Creating new Registrations sheet")
       registrationsSheet = spreadsheet.insertSheet("Registrations")
 
-      // Add headers
-      const headers = [
-        "Timestamp",
-        "Family Name",
-        "Contact Person",
-        "Email",
-        "Phone",
-        "Address",
-        "Adults",
-        "Kids",
-        "Zelle Confirmation",
-      ]
+      const headers = ["Timestamp", "Full Name", "Email", "Address", "Mobile", "Adults", "Kids", "Signed In"]
       registrationsSheet.getRange(1, 1, 1, headers.length).setValues([headers])
       registrationsSheet.getRange(1, 1, 1, headers.length).setFontWeight("bold")
       console.log("Registrations sheet created with headers")
     }
 
-    // Add registration data
     const timestamp = new Date()
     const rowData = [
       timestamp,
-      data.familyName || "",
-      data.contactPerson || "",
-      data.email || "",
-      data.phone || "",
-      data.address || "",
-      data.adults || 0,
-      data.kids || 0,
-      data.zelleConfirmation || "",
+      data.familyName || "", // Full Name
+      data.email || "", // Email
+      data.address || "", // Address
+      data.phone || "", // Mobile
+      data.adults || 0, // Adults
+      data.kids || 0, // Kids
+      data.signedInUser || "", // Signed In
     ]
 
     console.log("Adding registration data:", rowData)

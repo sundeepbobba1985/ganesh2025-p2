@@ -2,7 +2,7 @@ export async function GET() {
   try {
     const GOOGLE_SHEETS_URL =
       process.env.GOOGLE_SHEETS_URL ||
-      "https://script.google.com/macros/s/AKfycbw6oEK9Apb8lKHZcG2Jbys_0NbBFiqs41lyYsjJs9-IXZOwD5W-yaYS3Sslj2iIp-me4g/exec"
+      "https://script.google.com/macros/s/AKfycbzI67WXxPvW7NS8Jne_ZWgswDBaYyCep9J3_K-Q3Hssu4jP7sA6KGmC64wMOotD28S8Gw/exec"
 
     console.log("=== GET REGISTRATIONS DEBUG ===")
     console.log("Using Google Sheets URL:", GOOGLE_SHEETS_URL)

@@ -62,7 +62,6 @@ export default function Home() {
   const [volunteerForm, setVolunteerForm] = useState({
     name: "",
     email: "",
-    phone: "",
     volunteerType: "",
     cleanupDate: "",
   })
@@ -601,7 +600,6 @@ export default function Home() {
         setVolunteerForm({
           name: "",
           email: "",
-          phone: "",
           volunteerType: "",
           cleanupDate: "",
         })
@@ -1602,18 +1600,6 @@ export default function Home() {
                     required
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                     placeholder="Enter your email"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number *</label>
-                  <input
-                    type="tel"
-                    value={volunteerForm.phone}
-                    onChange={(e) => setVolunteerForm({ ...volunteerForm, phone: e.target.value })}
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                    placeholder="Enter your phone number"
                   />
                 </div>
 

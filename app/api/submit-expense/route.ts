@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
     // Send to Google Sheets
     const googleSheetsUrl =
       process.env.GOOGLE_SHEETS_URL ||
-      "https://script.google.com/macros/s/AKfycbzhxDSSVgCEW0I7q9Ui7-w_z2_POP6SVaXqM6PGbWPbS3XgDUmjJLTal0jLZzBQwl6G/exec"
+      "https://script.google.com/macros/s/AKfycbw6oEK9Apb8lKHZcG2Jbys_0NbBFiqs41lyYsjJs9-IXZOwD5W-yaYS3Sslj2iIp-me4g/exec"
 
     console.log("Sending to Google Sheets URL:", googleSheetsUrl)
 

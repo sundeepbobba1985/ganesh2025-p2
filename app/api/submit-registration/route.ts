@@ -8,20 +8,20 @@ export async function POST(request: NextRequest) {
     // Google Sheets Web App URL - you'll need to replace this with your actual URL
     const GOOGLE_SHEETS_URL =
       process.env.GOOGLE_SHEETS_URL ||
-      "https://script.google.com/macros/s/AKfycbzhxDSSVgCEW0I7q9Ui7-w_z2_POP6SVaXqM6PGbWPbS3XgDUmjJLTal0jLZzBQwl6G/exec"
+      "https://script.google.com/macros/s/AKfycbw6oEK9Apb8lKHZcG2Jbys_0NbBFiqs41lyYsjJs9-IXZOwD5W-yaYS3Sslj2iIp-me4g/exec"
 
     const requestPayload = {
       action: "submitRegistration",
       familyName: data.fullName,
-      contactPerson: data.fullName,
+      contactPerson: data.fullName, // Keep as same as family name
       email: data.email,
       phone: data.mobile,
       address: data.address,
-      adults: data.adults,
-      kids: data.kids,
-      zelleConfirmation: data.zelleConfirmation,
-      timestamp: data.timestamp,
-      signedInUser: data.signedInUser,
+      adults: Number.parseInt(data.adults) || 0,
+      kids: Number.parseInt(data.kids) || 0,
+      zelleConfirmation: data.zelleConfirmation || "",
+      timestamp: new Date().toISOString(),
+      signedInUser: data.signedInUser || "",
     }
 
     console.log("[v0] Sending registration to Google Sheets:", requestPayload)

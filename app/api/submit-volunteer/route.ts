@@ -8,13 +8,12 @@ export async function POST(request: NextRequest) {
     console.log("[v0] Volunteer data received:", body)
 
     const googleSheetsUrl =
-      "https://script.google.com/macros/s/AKfycbzhxDSSVgCEW0I7q9Ui7-w_z2_POP6SVaXqM6PGbWPbS3XgDUmjJLTal0jLZzBQwl6G/exec"
+      "https://script.google.com/macros/s/AKfycbw6oEK9Apb8lKHZcG2Jbys_0NbBFiqs41lyYsjJs9-IXZOwD5W-yaYS3Sslj2iIp-me4g/exec"
 
     const requestPayload = {
       action: "addVolunteer",
       name: body.name || "",
       email: body.email || "",
-      phone: body.mobile || "", // Use mobile from form, not phone
       volunteerType: body.volunteerType || "",
       cleanupDate: body.cleanupDate || "",
       timestamp: new Date().toISOString(),

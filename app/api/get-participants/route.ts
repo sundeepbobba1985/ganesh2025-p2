@@ -1,7 +1,7 @@
 export async function GET() {
   try {
     const GOOGLE_APPS_SCRIPT_URL =
-      "https://script.google.com/macros/s/AKfycbwg9YCJJc1BUNzDI1vbCQ_8nP6XROAeK9KWtxtuhOnvwBbgKkLE_k71tpa8N4muobLcbA/exec"
+      "https://script.google.com/macros/s/AKfycbycymc5GBPNJ6tLfFyn4xjrIjrYq9u3QMI9lPNzSIdiiUTkI418aFvsIq7iuwSGntDYYQ/exec"
 
     console.log("[v0] Fetching participants from:", GOOGLE_APPS_SCRIPT_URL)
 

@@ -163,18 +163,18 @@ function handleGetRegistrations() {
     const participants = []
     for (let i = 1; i < data.length; i++) {
       const row = data[i]
-      if (row[0]) {
-        // Only include rows with family name
+      if (row[1]) {
+        // Only include rows with family name (column B)
         participants.push({
-          familyName: row[0] || "",
-          contactName: row[1] || "",
-          email: row[2] || "",
-          phone: row[3] || "",
-          adults: Number.parseInt(row[4]) || 0,
-          kids: Number.parseInt(row[5]) || 0,
-          address: row[6] || "",
-          dietaryRestrictions: row[7] || "",
-          timestamp: row[8] || new Date(),
+          familyName: row[1] || "", // Column B: Full Name
+          contactPerson: row[2] || "", // Column C: Email
+          email: row[3] || "", // Column D: Address
+          phone: row[4] || "", // Column E: Mobile
+          address: row[5] || "", // Column F: Adults
+          adults: Number.parseInt(row[5]) || 0, // Column F: Adults
+          kids: Number.parseInt(row[6]) || 0, // Column G: Kids
+          timestamp: row[0] || new Date(), // Column A: Timestamp
+          zelleConfirmation: row[8] || "", // Column I: Zelle Confirmation
         })
       }
     }
@@ -211,29 +211,29 @@ function handleRegistration(data) {
         .getRange(1, 1, 1, 9)
         .setValues([
           [
-            "Family Name",
-            "Contact Name",
+            "Timestamp",
+            "Full Name",
             "Email",
-            "Phone",
+            "Address",
+            "Mobile",
             "Adults",
             "Kids",
-            "Address",
             "Dietary Restrictions",
-            "Timestamp",
+            "Zelle Confirmation",
           ],
         ])
     }
 
     const newRow = [
+      new Date(),
       data.familyName || "",
-      data.contactName || "",
+      data.contactPerson || "",
       data.email || "",
       data.phone || "",
       data.adults || 0,
       data.kids || 0,
-      data.address || "",
       data.dietaryRestrictions || "",
-      new Date(),
+      data.zelleConfirmation || "",
     ]
 
     sheet.appendRow(newRow)

@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
     console.log("[v0] Volunteer data received:", body)
 
     const googleSheetsUrl =
-      "https://script.google.com/macros/s/AKfycbwg9YCJJc1BUNzDI1vbCQ_8nP6XROAeK9KWtxtuhOnvwBbgKkLE_k71tpa8N4muobLcbA/exec"
+      "https://script.google.com/macros/s/AKfycbycymc5GBPNJ6tLfFyn4xjrIjrYq9u3QMI9lPNzSIdiiUTkI418aFvsIq7iuwSGntDYYQ/exec"
 
     const requestPayload = {
       action: "addVolunteer",

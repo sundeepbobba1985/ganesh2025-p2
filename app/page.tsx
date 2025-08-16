@@ -101,8 +101,61 @@ export default function PVGaneshaClone() {
 
   const [visitorCount, setVisitorCount] = useState<number>(0)
 
+  const loadDashboardStats = async () => {
+    try {
+      console.log("[v0] Loading dashboard stats from local storage...")
+      const localData = localStorage.getItem("pv-ganesha-registrations")
+
+      if (localData) {
+        const registrations = JSON.parse(localData)
+        const totalFamilies = registrations.length
+        const totalAdults = registrations.reduce((sum: number, r: any) => sum + (r.adults || 0), 0)
+        const totalKids = registrations.reduce((sum: number, r: any) => sum + (r.kids || 0), 0)
+
+        const stats = { totalFamilies, totalAdults, totalKids }
+        setDashboardStats(stats)
+        console.log("[v0] Dashboard stats loaded from local storage:", stats)
+        return
+      }
+
+      // Fallback to Google Sheets if no local data
+      console.log("[v0] No local data found, trying Google Sheets...")
+      const response = await fetch("/api/get-registrations")
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const data = await response.json()
+      console.log("[v0] Registration data received from Google Sheets:", data)
+
+      if (data.success && data.participants) {
+        // Calculate stats from Google Sheets data
+        const totalFamilies = data.participants.length
+        const totalAdults = data.participants.reduce((sum: number, p: any) => sum + (Number.parseInt(p.adults) || 0), 0)
+        const totalKids = data.participants.reduce((sum: number, p: any) => sum + (Number.parseInt(p.kids) || 0), 0)
+
+        const stats = { totalFamilies, totalAdults, totalKids }
+        setDashboardStats(stats)
+        console.log("[v0] Dashboard stats calculated from Google Sheets:", stats)
+      } else {
+        console.log("[v0] No registration data received from Google Sheets")
+        setDashboardStats({ totalFamilies: 0, totalAdults: 0, totalKids: 0 })
+      }
+    } catch (error) {
+      console.error("[v0] Error loading dashboard stats:", error)
+      setDashboardStats({ totalFamilies: 0, totalAdults: 0, totalKids: 0 })
+    }
+  }
+
+  const resetRegistrationStats = () => {
+    localStorage.removeItem("pv-ganesha-registrations")
+    setDashboardStats({ totalFamilies: 0, totalAdults: 0, totalKids: 0 })
+    console.log("[v0] Registration statistics reset to zero")
+  }
+
   useEffect(() => {
-    loadDashboardStats()
+    resetRegistrationStats()
     loadFinancials()
 
     const initVisitorCounter = () => {
@@ -149,53 +202,6 @@ export default function PVGaneshaClone() {
       console.log("[v0] Registration saved to local storage:", newRegistration)
     } catch (error) {
       console.error("[v0] Error saving to local storage:", error)
-    }
-  }
-
-  const loadDashboardStats = async () => {
-    try {
-      console.log("[v0] Loading dashboard stats from local storage...")
-      const localData = localStorage.getItem("pv-ganesha-registrations")
-
-      if (localData) {
-        const registrations = JSON.parse(localData)
-        const totalFamilies = registrations.length
-        const totalAdults = registrations.reduce((sum: number, r: any) => sum + (r.adults || 0), 0)
-        const totalKids = registrations.reduce((sum: number, r: any) => sum + (r.kids || 0), 0)
-
-        const stats = { totalFamilies, totalAdults, totalKids }
-        setDashboardStats(stats)
-        console.log("[v0] Dashboard stats loaded from local storage:", stats)
-        return
-      }
-
-      // Fallback to Google Sheets if no local data
-      console.log("[v0] No local data found, trying Google Sheets...")
-      const response = await fetch("/api/get-registrations")
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
-      }
-
-      const data = await response.json()
-      console.log("[v0] Registration data received from Google Sheets:", data)
-
-      if (data.success && data.participants) {
-        // Calculate stats from Google Sheets data
-        const totalFamilies = data.participants.length
-        const totalAdults = data.participants.reduce((sum: number, p: any) => sum + (Number.parseInt(p.adults) || 0), 0)
-        const totalKids = data.participants.reduce((sum: number, p: any) => sum + (Number.parseInt(p.kids) || 0), 0)
-
-        const stats = { totalFamilies, totalAdults, totalKids }
-        setDashboardStats(stats)
-        console.log("[v0] Dashboard stats calculated from Google Sheets:", stats)
-      } else {
-        console.log("[v0] No registration data received from Google Sheets")
-        setDashboardStats({ totalFamilies: 0, totalAdults: 0, totalKids: 0 })
-      }
-    } catch (error) {
-      console.error("[v0] Error loading dashboard stats:", error)
-      setDashboardStats({ totalFamilies: 0, totalAdults: 0, totalKids: 0 })
     }
   }
 

@@ -1,72 +1,45 @@
 export async function GET() {
   try {
-    const GOOGLE_SHEETS_URL =
-      process.env.GOOGLE_SHEETS_URL ||
+    const GOOGLE_APPS_SCRIPT_URL =
       "https://script.google.com/macros/s/AKfycbwg9YCJJc1BUNzDI1vbCQ_8nP6XROAeK9KWtxtuhOnvwBbgKkLE_k71tpa8N4muobLcbA/exec"
 
-    console.log("=== GET REGISTRATIONS DEBUG ===")
-    console.log("Using Google Sheets URL:", GOOGLE_SHEETS_URL)
-    console.log("Environment GOOGLE_SHEETS_URL:", process.env.GOOGLE_SHEETS_URL)
+    console.log("[v0] GET registrations - calling Google Apps Script")
+    console.log("[v0] Using URL:", GOOGLE_APPS_SCRIPT_URL)
 
-    const requestUrl = `${GOOGLE_SHEETS_URL}?action=getParticipants`
-    console.log("Full request URL:", requestUrl)
-
-    const response = await fetch(requestUrl, {
+    const response = await fetch(`${GOOGLE_APPS_SCRIPT_URL}?action=getRegistrations`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
       },
+      redirect: "follow", // Handle 302 redirects automatically
     })
 
-    console.log("Response status:", response.status)
-    console.log("Response headers:", Object.fromEntries(response.headers.entries()))
-
     if (!response.ok) {
-      const errorText = await response.text()
-      console.error("Response error text:", errorText)
-      throw new Error(`HTTP error! status: ${response.status}, text: ${errorText}`)
+      throw new Error(`HTTP error! status: ${response.status}`)
     }
 
     const responseText = await response.text()
-    console.log("Raw response (first 500 chars):", responseText.substring(0, 500))
+    console.log("[v0] Raw response:", responseText.substring(0, 200))
 
+    // Check if response is HTML (error page)
     if (responseText.includes("<html>") || responseText.includes("<!DOCTYPE")) {
-      console.error("Received HTML response instead of JSON - likely a Google Apps Script error")
-      console.error("Full HTML response:", responseText)
-      throw new Error(
-        "Google Apps Script returned HTML error page instead of JSON. Check your script deployment and doGet function.",
-      )
+      throw new Error("Received HTML response instead of JSON - likely a Google Apps Script error")
     }
 
-    let data
-    try {
-      data = JSON.parse(responseText)
-      console.log("Successfully parsed JSON:", data)
-    } catch (parseError) {
-      console.error("JSON parse error:", parseError)
-      console.error("Response was not valid JSON:", responseText)
-      throw new Error(`Invalid JSON response from Google Sheets: ${responseText.substring(0, 200)}...`)
-    }
+    const data = JSON.parse(responseText)
+    console.log("[v0] Parsed data:", data)
 
-    if (!data.success && data.error) {
-      console.error("Google Apps Script returned error:", data.error)
-      throw new Error(`Google Apps Script error: ${data.error}`)
-    }
-
-    const result = {
+    return Response.json({
       success: true,
       registrations: data.participants || [],
-    }
-
-    console.log("Returning result with", result.registrations.length, "participants")
-    return Response.json(result)
+    })
   } catch (error) {
-    console.error("=== ERROR IN GET REGISTRATIONS ===")
-    console.error("Error:", error.message)
+    console.error("[v0] Error fetching registrations:", error)
     return Response.json(
       {
         success: false,
-        error: `Failed to fetch registrations: ${error.message}`,
+        error: error.message,
+        registrations: [],
       },
       { status: 500 },
     )

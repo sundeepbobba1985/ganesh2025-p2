@@ -58,12 +58,16 @@ export default function Home() {
     receipt: "",
   })
 
-  const [showVolunteerModal, setShowVolunteerModal] = useState(false)
   const [volunteerForm, setVolunteerForm] = useState({
     name: "",
     email: "",
     volunteerType: "",
     cleanupDate: "",
+  })
+
+  const [volunteerCounts, setVolunteerCounts] = useState({
+    "Prasadam Morning": 0,
+    "Prasadam Evening": 0,
   })
 
   const [adminEmails] = useState([
@@ -92,6 +96,8 @@ export default function Home() {
     totalAdults: 0,
     totalKids: 0,
   })
+
+  const [showVolunteerModal, setShowVolunteerModal] = useState(false)
 
   useEffect(() => {
     loadDashboardStats()
@@ -610,6 +616,12 @@ export default function Home() {
           cleanupDate: "",
         })
         setShowVolunteerModal(false)
+        if (volunteerForm.volunteerType === "Prasadam Morning" || volunteerForm.volunteerType === "Prasadam Evening") {
+          setVolunteerCounts((prev) => ({
+            ...prev,
+            [volunteerForm.volunteerType]: prev[volunteerForm.volunteerType] + 1,
+          }))
+        }
       } else {
         console.error("[v0] Volunteer submission failed with status:", response.status)
         console.error("[v0] Error response:", responseData)
@@ -1613,33 +1625,104 @@ export default function Home() {
                   <label className="block text-sm font-medium text-gray-700 mb-2">Volunteer Type *</label>
                   <select
                     value={volunteerForm.volunteerType}
-                    onChange={(e) => setVolunteerForm({ ...volunteerForm, volunteerType: e.target.value })}
+                    onChange={(e) =>
+                      setVolunteerForm({ ...volunteerForm, volunteerType: e.target.value, cleanupDate: "" })
+                    }
                     required
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                   >
                     <option value="">Select volunteer type</option>
                     <option value="Setup & Decoration">Setup & Decoration</option>
-                    <option value="Cooking & Food Prep">Cooking & Food Prep</option>
-                    <option value="Serving & Hospitality">Serving & Hospitality</option>
-                    <option value="Cultural Programs">Cultural Programs</option>
+                    <option value="Prasadam Morning" disabled={volunteerCounts["Prasadam Morning"] >= 4}>
+                      Prasadam Morning {volunteerCounts["Prasadam Morning"] >= 4 ? "(Full)" : ""}
+                    </option>
+                    <option value="Prasadam Evening" disabled={volunteerCounts["Prasadam Evening"] >= 4}>
+                      Prasadam Evening {volunteerCounts["Prasadam Evening"] >= 4 ? "(Full)" : ""}
+                    </option>
+                    <option value="Pooja Items Shopping">Pooja Items Shopping</option>
                     <option value="Photography">Photography</option>
                     <option value="Cleanup">Cleanup</option>
+                    <option value="Cleanup Full Premises">Cleanup Full Premises</option>
                     <option value="General Support">General Support</option>
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Preferred Cleanup Date</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    {volunteerForm.volunteerType === "Setup & Decoration" ? "Available Date *" : "Available Date"}
+                  </label>
                   <select
                     value={volunteerForm.cleanupDate}
                     onChange={(e) => setVolunteerForm({ ...volunteerForm, cleanupDate: e.target.value })}
+                    required={volunteerForm.volunteerType === "Setup & Decoration"}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                   >
-                    <option value="">Select cleanup date (optional)</option>
-                    <option value="August 30th Evening">August 30th Evening (After Nimajjan)</option>
-                    <option value="August 31st Morning">August 31st Morning</option>
-                    <option value="August 31st Evening">August 31st Evening</option>
-                    <option value="September 1st">September 1st</option>
+                    <option value="">Select available date</option>
+
+                    {volunteerForm.volunteerType === "Setup & Decoration" && (
+                      <>
+                        <option value="August 23rd">August 23rd</option>
+                        <option value="August 24th">August 24th</option>
+                      </>
+                    )}
+
+                    {(volunteerForm.volunteerType === "Prasadam Morning" ||
+                      volunteerForm.volunteerType === "Prasadam Evening") && (
+                      <>
+                        <option value="August 23rd Evening">August 23rd Evening</option>
+                        <option value="August 24th">August 24th</option>
+                        <option value="August 25th">August 25th</option>
+                        <option value="August 26th">August 26th</option>
+                        <option value="August 27th">August 27th</option>
+                        <option value="August 28th">August 28th</option>
+                        <option value="August 29th">August 29th</option>
+                        <option value="August 30th">August 30th</option>
+                      </>
+                    )}
+
+                    {volunteerForm.volunteerType === "Pooja Items Shopping" && (
+                      <>
+                        <option value="August 25th">August 25th</option>
+                        <option value="August 26th">August 26th</option>
+                        <option value="August 27th">August 27th</option>
+                        <option value="August 28th">August 28th</option>
+                        <option value="August 29th">August 29th</option>
+                        <option value="August 30th">August 30th</option>
+                      </>
+                    )}
+
+                    {volunteerForm.volunteerType === "Photography" && (
+                      <>
+                        <option value="August 26th Evening">August 26th Evening</option>
+                        <option value="August 30th Evening">August 30th Evening</option>
+                      </>
+                    )}
+
+                    {volunteerForm.volunteerType === "Cleanup" && (
+                      <>
+                        <option value="August 26th">August 26th</option>
+                        <option value="August 27th">August 27th</option>
+                        <option value="August 28th">August 28th</option>
+                        <option value="August 29th">August 29th</option>
+                        <option value="August 30th">August 30th</option>
+                      </>
+                    )}
+
+                    {volunteerForm.volunteerType === "Cleanup Full Premises" && (
+                      <>
+                        <option value="August 30th Night">August 30th Night</option>
+                      </>
+                    )}
+
+                    {volunteerForm.volunteerType === "General Support" && (
+                      <>
+                        <option value="August 26th">August 26th</option>
+                        <option value="August 27th">August 27th</option>
+                        <option value="August 28th">August 28th</option>
+                        <option value="August 29th">August 29th</option>
+                        <option value="August 30th">August 30th</option>
+                      </>
+                    )}
                   </select>
                 </div>
 

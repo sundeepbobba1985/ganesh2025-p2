@@ -25,7 +25,7 @@ import {
   ExternalLink,
 } from "lucide-react"
 
-export default function Home() {
+export default function PVGaneshaClone() {
   const [isSignedIn, setIsSignedIn] = useState(false)
   const [userInfo, setUserInfo] = useState<{ name: string; email: string } | null>(null)
   const [showRegistrationForm, setShowRegistrationForm] = useState(false)
@@ -99,8 +99,35 @@ export default function Home() {
 
   const [showVolunteerModal, setShowVolunteerModal] = useState(false)
 
+  const [visitorCount, setVisitorCount] = useState<number>(0)
+
   useEffect(() => {
     loadDashboardStats()
+    loadFinancials()
+
+    const initVisitorCounter = () => {
+      const currentCount = localStorage.getItem("pv-ganesha-visitor-count")
+      if (currentCount) {
+        const count = Number.parseInt(currentCount, 10)
+        setVisitorCount(count)
+      } else {
+        // First time visitor
+        const newCount = 1
+        localStorage.setItem("pv-ganesha-visitor-count", newCount.toString())
+        setVisitorCount(newCount)
+      }
+
+      // Increment count for returning visitors (but only once per session)
+      const sessionVisited = sessionStorage.getItem("pv-ganesha-session-visited")
+      if (!sessionVisited) {
+        const updatedCount = Number.parseInt(localStorage.getItem("pv-ganesha-visitor-count") || "0", 10) + 1
+        localStorage.setItem("pv-ganesha-visitor-count", updatedCount.toString())
+        sessionStorage.setItem("pv-ganesha-session-visited", "true")
+        setVisitorCount(updatedCount)
+      }
+    }
+
+    initVisitorCounter()
   }, [])
 
   const saveRegistrationToLocalStorage = (registrationData: any) => {
@@ -718,6 +745,28 @@ export default function Home() {
       setParticipants([])
     } finally {
       setLoadingParticipants(false)
+    }
+  }
+
+  const loadFinancials = async () => {
+    setLoadingExpenses(true)
+
+    try {
+      console.log("Fetching expenses from API...")
+      const response = await fetch("/api/get-expenses")
+      const data = await response.json()
+      console.log("Expenses API response:", data)
+
+      if (data.success) {
+        setExpenses(data.expenses)
+      } else {
+        alert(`Failed to load expenses data: ${data.error || "Unknown error"}`)
+      }
+    } catch (error) {
+      console.error("Error fetching expenses:", error)
+      alert("Error loading expenses data")
+    } finally {
+      setLoadingExpenses(false)
     }
   }
 
@@ -2084,6 +2133,7 @@ export default function Home() {
             <br />
             Powered by Vercel
           </p>
+          <p className="text-gray-500 text-xs mt-2">Visitors: {visitorCount.toLocaleString()}</p>
         </div>
       </footer>
     </div>

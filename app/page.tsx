@@ -1337,13 +1337,21 @@ export default function Home() {
             <Card className="bg-white/90 backdrop-blur-sm border border-orange-200 shadow-lg rounded-2xl">
               <CardContent className="p-6 md:p-8">
                 <h3 className="text-gray-900 text-lg md:text-xl font-bold mb-4">
-                  What is included in the registration fee?
+                  Is there an age limit for participation?
                 </h3>
-                <p className="text-gray-700 leading-relaxed text-base md:text-lg">
-                  The $75 family registration covers idol, decorations, pooja items, priest fees, potluck utensils,
-                  fruits & flowers, access to cultural programs, commemorative items for children, and participation in
-                  all rituals and ceremonies.
+                <p className="text-gray-700 leading-relaxed text-base md:text-lg mb-4">
+                  No age limit! Our celebration welcomes families with children of all ages. We have special activities
+                  and programs designed for kids, and the entire event is family-friendly with a safe, welcoming
+                  environment.
                 </p>
+                <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mt-4">
+                  <h4 className="font-semibold text-amber-800 mb-2">Important Guidelines:</h4>
+                  <ul className="text-amber-700 text-sm space-y-1">
+                    <li>• Parents must supervise their children at all times during the event</li>
+                    <li>• Please be mindful of host family privacy and respect their home</li>
+                    <li>• Children should stay with their families in designated celebration areas</li>
+                  </ul>
+                </div>
               </CardContent>
             </Card>
 
@@ -1393,11 +1401,19 @@ export default function Home() {
                 <h3 className="text-gray-900 text-lg md:text-xl font-bold mb-4">
                   Is there an age limit for participation?
                 </h3>
-                <p className="text-gray-700 leading-relaxed text-base md:text-lg">
+                <p className="text-gray-700 leading-relaxed text-base md:text-lg mb-4">
                   No age limit! Our celebration welcomes families with children of all ages. We have special activities
                   and programs designed for kids, and the entire event is family-friendly with a safe, welcoming
                   environment.
                 </p>
+                <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mt-4">
+                  <h4 className="font-semibold text-amber-800 mb-2">Important Guidelines:</h4>
+                  <ul className="text-amber-700 text-sm space-y-1">
+                    <li>• Parents must supervise their children at all times during the event</li>
+                    <li>• Please be mindful of host family privacy and respect their home</li>
+                    <li>• Children should stay with their families in designated celebration areas</li>
+                  </ul>
+                </div>
               </CardContent>
             </Card>
           </div>
@@ -1422,6 +1438,16 @@ export default function Home() {
               </div>
 
               <form onSubmit={handleSubmitRegistration} className="space-y-6">
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                  <h4 className="font-semibold text-blue-800 mb-2">Participation Guidelines</h4>
+                  <ul className="text-blue-700 text-sm space-y-1">
+                    <li>• All ages welcome - family-friendly celebration</li>
+                    <li>• Parents must supervise children at all times</li>
+                    <li>• Please respect host family privacy and home</li>
+                    <li>• Stay in designated celebration areas</li>
+                  </ul>
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Full Name *</label>
@@ -1666,13 +1692,18 @@ export default function Home() {
                       </>
                     )}
 
-                    {(volunteerForm.volunteerType === "Prasadam Morning" ||
-                      volunteerForm.volunteerType === "Prasadam Evening") && (
+                    {volunteerForm.volunteerType === "Prasadam Morning" && (
                       <>
-                        <option value="August 23rd Evening">August 23rd Evening</option>
-                        <option value="August 24th">August 24th</option>
-                        <option value="August 25th">August 25th</option>
-                        <option value="August 26th">August 26th</option>
+                        <option value="August 27th">August 27th</option>
+                        <option value="August 28th">August 28th</option>
+                        <option value="August 29th">August 29th</option>
+                        <option value="August 30th">August 30th</option>
+                      </>
+                    )}
+
+                    {volunteerForm.volunteerType === "Prasadam Evening" && (
+                      <>
+                        <option value="August 26th Evening">August 26th Evening</option>
                         <option value="August 27th">August 27th</option>
                         <option value="August 28th">August 28th</option>
                         <option value="August 29th">August 29th</option>

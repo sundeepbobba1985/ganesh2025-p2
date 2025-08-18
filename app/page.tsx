@@ -1273,12 +1273,12 @@ export default function PVGaneshaClone() {
                       <div className="flex-1">
                         <p className="font-bold text-lg md:text-xl mb-3 text-gray-900">PAYMENT: $75 per family</p>
                         <p className="text-gray-700 leading-relaxed text-base md:text-lg mb-4">
-                          Send payment via Zelle to: <span className="font-bold text-orange-700">...2148381800</span>
+                          Send payment via Zelle to: <span className="font-bold text-orange-700">2148381800</span>
                         </p>
 
                         <div className="bg-white rounded-xl p-4 border border-gray-200 inline-block">
                           <div className="text-center mb-3">
-                            <p className="font-semibold text-gray-800 mb-2">...2148381800</p>
+                            <p className="font-semibold text-gray-800 mb-2">2148381800</p>
                           </div>
                           <img
                             src="/zelle-qr-varatharajan.png"

@@ -25,7 +25,12 @@ import {
   ExternalLink,
 } from "lucide-react"
 
-export default function PVGaneshaClone() {
+export default function Home() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [showPasscodeModal, setShowPasscodeModal] = useState(false)
+  const [passcodeInput, setPasscodeInput] = useState("")
+  const [pendingAction, setPendingAction] = useState<"participants" | "gallery" | null>(null)
+
   const [isSignedIn, setIsSignedIn] = useState(false)
   const [userInfo, setUserInfo] = useState<{ name: string; email: string } | null>(null)
   const [showRegistrationForm, setShowRegistrationForm] = useState(false)
@@ -229,7 +234,48 @@ export default function PVGaneshaClone() {
     }
   }
 
+  const verifyPasscode = () => {
+    const correctPasscode = process.env.NEXT_PUBLIC_ADMIN_PASSCODE || "admin123"
+    if (passcodeInput === correctPasscode) {
+      setIsAuthenticated(true)
+      setShowPasscodeModal(false)
+      setPasscodeInput("")
+
+      // Execute the pending action
+      if (pendingAction === "participants") {
+        setShowParticipants(true)
+      } else if (pendingAction === "gallery") {
+        setShowGallery(true)
+      }
+      setPendingAction(null)
+    } else {
+      alert("Incorrect passcode. Please try again.")
+      setPasscodeInput("")
+    }
+  }
+
+  const handleParticipantsSection = () => {
+    if (!isSignedIn) {
+      alert("Please sign in with Google to view participants.")
+      return
+    }
+
+    if (!isAuthenticated) {
+      setPendingAction("participants")
+      setShowPasscodeModal(true)
+      return
+    }
+
+    setShowParticipants(true)
+  }
+
   const handleGallerySection = () => {
+    if (!isAuthenticated) {
+      setPendingAction("gallery")
+      setShowPasscodeModal(true)
+      return
+    }
+
     setShowGallery(true)
   }
 
@@ -740,14 +786,6 @@ export default function PVGaneshaClone() {
     setShowVolunteerModal(true)
   }
 
-  const handleParticipantsSection = () => {
-    if (!isSignedIn) {
-      alert("Please sign in with Google to view participants.")
-      return
-    }
-    setShowParticipants(true)
-  }
-
   const loadParticipants = async () => {
     if (loadingParticipants) return
 
@@ -973,7 +1011,7 @@ export default function PVGaneshaClone() {
                   <span className="text-sm font-medium">Gallery</span>
                 </button>
                 <button
-                  onClick={() => handleSectionClick("Participants")}
+                  onClick={handleParticipantsSection}
                   className="flex items-center space-x-2 text-gray-700 hover:text-orange-600 transition-colors"
                 >
                   <Users className="w-4 h-4" />
@@ -1094,7 +1132,7 @@ export default function PVGaneshaClone() {
                 </button>
                 <button
                   onClick={() => {
-                    handleSectionClick("Participants")
+                    handleParticipantsSection()
                     setIsMobileMenuOpen(false)
                   }}
                   className="flex items-center space-x-3 text-gray-700 hover:text-orange-600 transition-colors py-2 text-left"
@@ -1657,6 +1695,60 @@ export default function PVGaneshaClone() {
         </div>
       )}
 
+      {showPasscodeModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <Card className="bg-white w-full max-w-md rounded-3xl shadow-2xl mx-4">
+            <CardContent className="p-6 md:p-8">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-gray-900 text-2xl font-bold font-serif">Enter Passcode</h2>
+                <Button
+                  onClick={() => {
+                    setShowPasscodeModal(false)
+                    setPasscodeInput("")
+                    setPendingAction(null)
+                  }}
+                  variant="outline"
+                  size="sm"
+                  className="rounded-full"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+
+              <div className="text-center">
+                <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl mx-auto mb-6 flex items-center justify-center">
+                  <Lock className="w-8 h-8 text-white" />
+                </div>
+
+                <p className="text-gray-600 mb-6">This section is protected. Please enter the passcode to continue.</p>
+
+                <div className="space-y-4">
+                  <input
+                    type="password"
+                    value={passcodeInput}
+                    onChange={(e) => setPasscodeInput(e.target.value)}
+                    placeholder="Enter passcode"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-center text-lg"
+                    onKeyPress={(e) => e.key === "Enter" && verifyPasscode()}
+                    autoFocus
+                  />
+
+                  <Button
+                    onClick={verifyPasscode}
+                    className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-bold py-3 rounded-xl text-lg shadow-lg hover:shadow-xl transition-all"
+                  >
+                    Verify Passcode
+                  </Button>
+                </div>
+
+                <p className="text-sm text-gray-500 mt-4">Contact the administrator if you need access</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Participants Modal */}
       {showParticipants && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <Card className="bg-white w-full max-w-2xl rounded-3xl shadow-2xl mx-4">

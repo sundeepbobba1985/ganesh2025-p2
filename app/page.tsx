@@ -235,7 +235,7 @@ export default function Home() {
   }
 
   const verifyPasscode = () => {
-    const correctPasscode = process.env.NEXT_PUBLIC_ADMIN_PASSCODE || "admin123"
+    const correctPasscode = process.env.NEXT_PUBLIC_ADMIN_PASSCODE || "Greenbelt@2025"
     if (passcodeInput === correctPasscode) {
       setIsAuthenticated(true)
       setShowPasscodeModal(false)

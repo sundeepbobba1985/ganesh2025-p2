@@ -1273,17 +1273,16 @@ export default function PVGaneshaClone() {
                       <div className="flex-1">
                         <p className="font-bold text-lg md:text-xl mb-3 text-gray-900">PAYMENT: $75 per family</p>
                         <p className="text-gray-700 leading-relaxed text-base md:text-lg mb-4">
-                          Send payment via Zelle to:{" "}
-                          <span className="font-bold text-orange-700">pecanmeadowevents@gmail.com</span>
+                          Send payment via Zelle to: <span className="font-bold text-orange-700">...2148381800</span>
                         </p>
 
                         <div className="bg-white rounded-xl p-4 border border-gray-200 inline-block">
                           <div className="text-center mb-3">
-                            <p className="font-semibold text-gray-800 mb-2">pecanmeadowevents@gmail.com</p>
+                            <p className="font-semibold text-gray-800 mb-2">...2148381800</p>
                           </div>
                           <img
-                            src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/PHOTO-2025-08-14-21-26-03.jpg-3gWNlKI6x7XdHRYPu3RJJ7B12eqADk.jpeg"
-                            alt="Zelle QR Code for pecanmeadowevents@gmail.com"
+                            src="/zelle-qr-varatharajan.png"
+                            alt="Zelle QR Code for Varatharajan Lingam"
                             className="w-48 h-48 mx-auto"
                           />
                           <div className="mt-3 text-center">
